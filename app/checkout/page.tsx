@@ -71,204 +71,316 @@ export default function CheckoutPage() {
 
   const generateTicketPDF = async () => {
     const doc = new jsPDF({
-      orientation: 'portrait',
+      orientation: 'landscape',
       unit: 'mm',
-      format: 'a4'
+      format: [230, 100] // Wider to fit all elements
     });
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const ticketWidth = 190;
-    const ticketHeight = 85;
-    const ticketX = (pageWidth - ticketWidth) / 2;
-
-    // Load logo
+    // Create Mangozzz logo using canvas
     let logoData: string | null = null;
     try {
-      const logoResponse = await fetch('https://mangozzz.com/images/logo.png');
-      const logoBlob = await logoResponse.blob();
-      logoData = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(logoBlob);
-      });
+      const canvas = document.createElement('canvas');
+      canvas.width = 100;
+      canvas.height = 100;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Orange gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 100, 100);
+        gradient.addColorStop(0, '#f97316');
+        gradient.addColorStop(1, '#ea580c');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(50, 50, 50, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Yellow mango
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.ellipse(50, 55, 25, 32, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Green leaf
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.ellipse(58, 22, 18, 10, Math.PI / 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        logoData = canvas.toDataURL('image/png');
+      }
     } catch (e) {
-      console.log('Could not load logo');
+      console.log('Could not create logo');
     }
 
     let ticketIndex = 0;
+    const pageWidth = 230;
+    const pageHeight = 100;
+    const margin = 5;
+    const stubWidth = 50;
+    const mainWidth = pageWidth - stubWidth - margin * 2 - 5;
 
     for (const item of booking.items) {
       for (let i = 0; i < item.quantity; i++) {
-        if (ticketIndex > 0 && ticketIndex % 2 === 0) {
-          doc.addPage();
+        if (ticketIndex > 0) {
+          doc.addPage([230, 100], 'landscape');
         }
 
-        const currentY = ticketIndex % 2 === 0 ? 20 : 115;
         const ticketCode = `${bookingId}-${item.ticketId.toUpperCase()}-${i + 1}`;
 
         // Generate QR code
         let qrDataUrl = '';
         try {
           qrDataUrl = await QRCode.toDataURL(ticketCode, {
-            width: 200,
-            margin: 1,
-            color: { dark: '#1f2937', light: '#ffffff' }
+            width: 300,
+            margin: 0,
+            color: { dark: '#1e1b4b', light: '#ffffff' }
           });
         } catch (e) {
           console.log('QR generation failed');
         }
 
-        // Main ticket container with gradient-like effect
-        // Outer shadow effect
-        doc.setFillColor(230, 230, 235);
-        doc.roundedRect(ticketX + 1, currentY + 1, ticketWidth, ticketHeight, 6, 6, 'F');
+        // ==================== MAIN TICKET SECTION ====================
+        const mainX = margin;
+        const mainY = margin;
 
-        // Main white background
+        // Main ticket background
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(ticketX, currentY, ticketWidth, ticketHeight, 6, 6, 'F');
+        doc.roundedRect(mainX, mainY, mainWidth, pageHeight - margin * 2, 4, 4, 'F');
 
-        // Left gradient strip
-        doc.setFillColor(99, 102, 241); // indigo
-        doc.roundedRect(ticketX, currentY, 12, ticketHeight, 6, 0, 'F');
-        doc.rect(ticketX + 6, currentY, 6, ticketHeight, 'F');
+        // Top accent bar - solid indigo
+        doc.setFillColor(67, 56, 202); // indigo-700
+        doc.roundedRect(mainX, mainY, mainWidth, 24, 4, 4, 'F');
+        doc.rect(mainX, mainY + 12, mainWidth, 12, 'F');
 
-        // Decorative circles on left strip
-        doc.setFillColor(129, 140, 248); // lighter indigo
-        doc.circle(ticketX + 6, currentY + 15, 3, 'F');
-        doc.circle(ticketX + 6, currentY + ticketHeight - 15, 3, 'F');
-
-        // Header area with gradient effect
-        doc.setFillColor(99, 102, 241);
-        doc.rect(ticketX + 12, currentY, ticketWidth - 12, 28, 'F');
-        // Add slight gradient overlay
-        doc.setFillColor(129, 140, 248);
-        doc.rect(ticketX + 12, currentY, ticketWidth - 12, 8, 'F');
-
-        // Round top-right corner overlay
-        doc.setFillColor(255, 255, 255);
-        doc.circle(ticketX + ticketWidth, currentY, 6, 'F');
-        doc.setFillColor(99, 102, 241);
-        doc.roundedRect(ticketX + ticketWidth - 12, currentY, 12, 28, 0, 6, 'F');
-
-        // Logo placeholder or text
+        // Logo in header
         if (logoData) {
           try {
-            doc.addImage(logoData, 'PNG', ticketX + 18, currentY + 4, 20, 20);
+            doc.addImage(logoData, 'PNG', mainX + 6, mainY + 3, 18, 18);
           } catch (e) {
-            // Fallback to text
+            // Fallback text if image fails
             doc.setFillColor(255, 255, 255);
-            doc.roundedRect(ticketX + 18, currentY + 6, 16, 16, 3, 3, 'F');
-            doc.setTextColor(99, 102, 241);
-            doc.setFontSize(12);
+            doc.circle(mainX + 15, mainY + 12, 8, 'F');
+            doc.setTextColor(67, 56, 202);
+            doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('M', ticketX + 23, currentY + 17);
+            doc.text('M', mainX + 11, mainY + 16);
           }
         } else {
+          // Fallback text
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(ticketX + 18, currentY + 6, 16, 16, 3, 3, 'F');
-          doc.setTextColor(99, 102, 241);
-          doc.setFontSize(12);
+          doc.circle(mainX + 15, mainY + 12, 8, 'F');
+          doc.setTextColor(67, 56, 202);
+          doc.setFontSize(14);
           doc.setFont('helvetica', 'bold');
-          doc.text('M', ticketX + 23, currentY + 17);
+          doc.text('M', mainX + 11, mainY + 16);
         }
 
-        // Event title
+        // Event title in header
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(18);
+        doc.setFontSize(15);
         doc.setFont('helvetica', 'bold');
-        doc.text("NEW YEAR'S EVE 2026", ticketX + 42, currentY + 12);
+        doc.text("NEW YEAR'S EVE 2026", mainX + 28, mainY + 11);
 
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(224, 231, 255);
-        doc.text('Mangozzz Magical World Resort', ticketX + 42, currentY + 20);
-
-        // Ticket type badge
-        doc.setFillColor(236, 72, 153);
-        doc.roundedRect(ticketX + ticketWidth - 48, currentY + 7, 40, 14, 3, 3, 'F');
-        doc.setTextColor(255, 255, 255);
         doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(199, 210, 254);
+        doc.text('The Ultimate Celebration | Mangozzz Resort', mainX + 28, mainY + 18);
+
+        // Ticket type badge in header
+        doc.setFillColor(236, 72, 153);
+        doc.roundedRect(mainX + mainWidth - 42, mainY + 6, 38, 12, 3, 3, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
-        const ticketTypeName = item.ticketName.length > 12 ? item.ticketName.substring(0, 12) : item.ticketName;
-        doc.text(ticketTypeName.toUpperCase(), ticketX + ticketWidth - 28, currentY + 16, { align: 'center' });
+        const ticketTypeName = item.ticketName.length > 14 ? item.ticketName.substring(0, 14) : item.ticketName;
+        doc.text(ticketTypeName.toUpperCase(), mainX + mainWidth - 23, mainY + 14, { align: 'center' });
 
         // Content area
-        const contentY = currentY + 34;
+        const contentY = mainY + 30;
 
-        // Guest name section
+        // Guest name - prominent
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text('GUEST NAME', ticketX + 18, contentY);
-        doc.setFontSize(13);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(31, 41, 55);
-        doc.text(formData.name || 'Guest', ticketX + 18, contentY + 7);
+        doc.setTextColor(107, 114, 128);
+        doc.text('GUEST NAME', mainX + 8, contentY);
 
-        // Date section
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text(formData.name || 'Guest', mainX + 8, contentY + 8);
+
+        // Venue
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text('DATE', ticketX + 18, contentY + 18);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(31, 41, 55);
-        doc.text('31 December 2025', ticketX + 18, contentY + 25);
+        doc.setTextColor(107, 114, 128);
+        doc.text('VENUE', mainX + 8, contentY + 18);
 
-        // Time section
-        doc.setFontSize(7);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text('Mangozzz Magical World Resort', mainX + 8, contentY + 25);
+
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text('TIME', ticketX + 70, contentY + 18);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(31, 41, 55);
-        doc.text('7:00 PM Onwards', ticketX + 70, contentY + 25);
+        doc.setTextColor(107, 114, 128);
+        doc.text('Thane, Maharashtra', mainX + 8, contentY + 32);
 
-        // Vertical divider line
+        // Vertical divider
         doc.setDrawColor(229, 231, 235);
-        doc.setLineWidth(0.5);
-        doc.line(ticketX + 130, contentY - 2, ticketX + 130, contentY + 38);
+        doc.setLineWidth(0.3);
+        doc.line(mainX + 95, contentY - 4, mainX + 95, contentY + 38);
 
-        // QR Code section
-        if (qrDataUrl) {
-          doc.addImage(qrDataUrl, 'PNG', ticketX + 140, contentY - 2, 35, 35);
-        }
+        // Date & Time boxes
+        const infoBoxX = mainX + 102;
 
-        // Ticket ID below QR
+        // Date box
+        doc.setFillColor(238, 242, 255);
+        doc.roundedRect(infoBoxX, contentY - 2, 30, 22, 3, 3, 'F');
+        doc.setFontSize(6);
+        doc.setTextColor(67, 56, 202);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DATE', infoBoxX + 15, contentY + 4, { align: 'center' });
+        doc.setFontSize(12);
+        doc.setTextColor(17, 24, 39);
+        doc.text('31', infoBoxX + 15, contentY + 12, { align: 'center' });
+        doc.setFontSize(7);
+        doc.text('DEC 2025', infoBoxX + 15, contentY + 17, { align: 'center' });
+
+        // Time box
+        doc.setFillColor(253, 242, 248);
+        doc.roundedRect(infoBoxX + 34, contentY - 2, 30, 22, 3, 3, 'F');
+        doc.setFontSize(6);
+        doc.setTextColor(219, 39, 119);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TIME', infoBoxX + 49, contentY + 4, { align: 'center' });
+        doc.setFontSize(12);
+        doc.setTextColor(17, 24, 39);
+        doc.text('7:00', infoBoxX + 49, contentY + 12, { align: 'center' });
+        doc.setFontSize(7);
+        doc.text('PM', infoBoxX + 49, contentY + 17, { align: 'center' });
+
+        // Gate & Seat info
         doc.setFontSize(6);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text(ticketCode, ticketX + 157.5, contentY + 36, { align: 'center' });
+        doc.setTextColor(107, 114, 128);
+        doc.text('GATE', infoBoxX + 4, contentY + 28);
+        doc.text('SEAT', infoBoxX + 38, contentY + 28);
 
-        // Bottom section with booking info
-        const bottomY = currentY + ticketHeight - 14;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text('A', infoBoxX + 4, contentY + 36);
+        doc.text('OPEN', infoBoxX + 38, contentY + 36);
 
-        // Dashed tear line
-        doc.setDrawColor(209, 213, 219);
-        doc.setLineDashPattern([2, 2], 0);
-        doc.line(ticketX + 18, bottomY - 4, ticketX + ticketWidth - 8, bottomY - 4);
-        doc.setLineDashPattern([], 0);
+        // Bottom bar with booking info
+        const bottomY = pageHeight - margin - 12;
+        doc.setFillColor(249, 250, 251);
+        doc.roundedRect(mainX, bottomY, mainWidth, 12, 0, 0, 'F');
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.3);
+        doc.line(mainX, bottomY, mainX + mainWidth, bottomY);
 
         // Booking ID
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.text('BOOKING ID', mainX + 8, bottomY + 4);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(67, 56, 202);
+        doc.text(bookingId, mainX + 8, bottomY + 9);
+
+        // Ticket number
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.text('TICKET', mainX + 60, bottomY + 4);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text(`${i + 1} of ${item.quantity}`, mainX + 60, bottomY + 9);
+
+        // Amount paid
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.text('AMOUNT', mainX + 100, bottomY + 4);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text(`Rs. ${item.price.toLocaleString('en-IN')}`, mainX + 100, bottomY + 9);
+
+        // Entry note
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(156, 163, 175);
+        doc.text('Valid for single entry only. Non-transferable.', mainX + mainWidth - 4, bottomY + 7, { align: 'right' });
+
+        // ==================== PERFORATION LINE ====================
+        const perfX = mainX + mainWidth + 2.5;
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineDashPattern([2, 2], 0);
+        doc.setLineWidth(0.4);
+        doc.line(perfX, margin + 6, perfX, pageHeight - margin - 6);
+        doc.setLineDashPattern([], 0);
+
+        // Perforation circles (cut indicators)
+        doc.setFillColor(245, 245, 245);
+        doc.circle(perfX, margin + 2, 4, 'F');
+        doc.circle(perfX, pageHeight - margin - 2, 4, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.circle(perfX, margin + 2, 4, 'S');
+        doc.circle(perfX, pageHeight - margin - 2, 4, 'S');
+
+        // ==================== STUB SECTION (Right side) ====================
+        const stubX = mainX + mainWidth + 5;
+
+        // Stub background - dark indigo
+        doc.setFillColor(30, 27, 75); // indigo-950
+        doc.roundedRect(stubX, mainY, stubWidth, pageHeight - margin * 2, 4, 4, 'F');
+
+        // Stub header
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ENTRY PASS', stubX + stubWidth / 2, mainY + 10, { align: 'center' });
+
+        // QR Code background - white rounded rect
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(stubX + 5, mainY + 16, stubWidth - 10, stubWidth - 10, 3, 3, 'F');
+
+        // QR Code
+        if (qrDataUrl) {
+          doc.addImage(qrDataUrl, 'PNG', stubX + 7, mainY + 18, stubWidth - 14, stubWidth - 14);
+        }
+
+        // Ticket code under QR
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(200, 200, 210);
+        doc.text(ticketCode, stubX + stubWidth / 2, mainY + stubWidth + 12, { align: 'center' });
+
+        // Scan instruction
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(165, 180, 252); // indigo-300
+        doc.text('SCAN AT ENTRY', stubX + stubWidth / 2, mainY + stubWidth + 19, { align: 'center' });
+
+        // Stub footer with event info
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('NYE 2026', stubX + stubWidth / 2, pageHeight - margin - 12, { align: 'center' });
+
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text('BOOKING ID:', ticketX + 18, bottomY + 2);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(99, 102, 241);
-        doc.text(bookingId, ticketX + 42, bottomY + 2);
+        doc.setTextColor(200, 200, 210);
+        doc.text('31 DEC | 7 PM', stubX + stubWidth / 2, pageHeight - margin - 6, { align: 'center' });
 
-        // Ticket count
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(156, 163, 175);
-        doc.text(`TICKET ${i + 1} OF ${item.quantity}`, ticketX + 80, bottomY + 2);
-
-        // Entry instructions
-        doc.setFontSize(6);
-        doc.setTextColor(156, 163, 175);
-        doc.text('Present this ticket at venue entrance. Valid for one-time entry only.', ticketX + ticketWidth - 8, bottomY + 2, { align: 'right' });
+        // Outer border for main ticket
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(mainX, mainY, mainWidth, pageHeight - margin * 2, 4, 4, 'S');
 
         ticketIndex++;
       }
