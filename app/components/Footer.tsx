@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { resortInfo } from '../data/eventData';
 import { Phone, Globe, Facebook, Instagram, MessageCircle, Heart, Sparkles } from 'lucide-react';
 
@@ -14,10 +15,11 @@ export default function Footer() {
   ];
 
   const helpLinks = [
-    { href: '#venue', label: 'Venue & Directions' },
-    { href: '#faq', label: 'FAQs' },
-    { href: '#terms', label: 'Terms & Conditions' },
-    { href: `tel:${resortInfo.phone}`, label: 'Contact Support' },
+    { href: '#venue', label: 'Venue & Directions', isExternal: false },
+    { href: '#faq', label: 'FAQs', isExternal: false },
+    { href: '/terms', label: 'Terms & Conditions', isExternal: true },
+    { href: '/privacy', label: 'Privacy Policy', isExternal: true },
+    { href: '/refund', label: 'Refund Policy', isExternal: true },
   ];
 
   return (
