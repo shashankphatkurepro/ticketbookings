@@ -99,10 +99,17 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {helpLinks.map((link) => (
                   <li key={link.href}>
-                    <a href={link.href} className="text-gray-600 hover:text-pink-600 transition-colors text-sm flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 bg-pink-400 rounded-full group-hover:scale-125 transition-transform" />
-                      {link.label}
-                    </a>
+                    {link.isExternal ? (
+                      <Link href={link.href} className="text-gray-600 hover:text-pink-600 transition-colors text-sm flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 bg-pink-400 rounded-full group-hover:scale-125 transition-transform" />
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a href={link.href} className="text-gray-600 hover:text-pink-600 transition-colors text-sm flex items-center gap-2 group">
+                        <span className="w-1.5 h-1.5 bg-pink-400 rounded-full group-hover:scale-125 transition-transform" />
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
