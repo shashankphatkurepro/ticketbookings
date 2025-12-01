@@ -156,9 +156,9 @@ export default function Footer() {
               © {currentYear} Mangozzz Resort. Made with <Heart className="w-3.5 h-3.5 text-pink-500 fill-pink-500" /> in India
             </p>
             <div className="flex items-center gap-6 text-sm text-gray-500">
-              <a href="#" className="hover:text-indigo-600 transition-colors">Terms</a>
-              <a href="#" className="hover:text-indigo-600 transition-colors">Privacy</a>
-              <a href="#" className="hover:text-indigo-600 transition-colors">Refund</a>
+              <Link href="/terms" className="hover:text-indigo-600 transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-indigo-600 transition-colors">Privacy</Link>
+              <Link href="/refund" className="hover:text-indigo-600 transition-colors">Refund</Link>
             </div>
           </div>
         </div>
