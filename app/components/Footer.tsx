@@ -152,9 +152,14 @@ export default function Footer() {
 
           {/* Bottom Bar */}
           <div className="border-t border-gray-200/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500 flex items-center gap-1">
-              © {currentYear} Mangozzz Resort. Made with <Heart className="w-3.5 h-3.5 text-pink-500 fill-pink-500" /> in India
-            </p>
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p className="text-sm text-gray-500 flex items-center gap-1">
+                © {currentYear} Mangozzz Resort. Made with <Heart className="w-3.5 h-3.5 text-pink-500 fill-pink-500" /> in India
+              </p>
+              <p className="text-xs text-gray-400">
+                Managed by <span className="font-semibold text-gray-600">SHIVAY ENTERPRISES</span>
+              </p>
+            </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link href="/terms" className="hover:text-indigo-600 transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-indigo-600 transition-colors">Privacy</Link>
