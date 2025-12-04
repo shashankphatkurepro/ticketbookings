@@ -6,7 +6,7 @@ export const eventData = {
   duration: "12+ Hours",
   ageRestriction: "All Ages",
   languages: ["Hindi", "English", "Marathi"],
-  genres: ["Party", "DJ Night"],
+  genres: ["Video Dj", "Night"],
   interestedCount: 2500,
 
   description: `Get ready for the most spectacular New Year's Eve celebration at Mangozzz Magical World Resort! Join us for an unforgettable night filled with music, dance, gourmet food, and magical moments as we countdown to 2026.
@@ -18,7 +18,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
   venue: {
     name: "Mangozzz Magical World Resort",
     address: "Mumbai-Nashik Highway, Near Shahapur",
-    city: "Thane, Maharashtra 421601",
+    city: "Chowk, Karjat, Maharashtra 410201",
     mapUrl: "https://maps.google.com/?q=Mangozzz+Resort+Shahapur",
   },
 

@@ -49,7 +49,7 @@ export default function BookingSidebar() {
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
             <MapPin className="w-4 h-4 text-white/80 mx-auto mb-1" />
-            <p className="text-white text-xs font-medium">Thane</p>
+            <p className="text-white text-xs font-medium">Chowk, Karjat</p>
           </div>
         </div>
       </div>

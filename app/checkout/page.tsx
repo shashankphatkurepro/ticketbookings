@@ -222,7 +222,7 @@ export default function CheckoutPage() {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(107, 114, 128);
-        doc.text('Thane, Maharashtra', mainX + 8, contentY + 32);
+        doc.text('Chowk, Karjat, Maharashtra', mainX + 8, contentY + 32);
 
         // Vertical divider
         doc.setDrawColor(229, 231, 235);
@@ -993,7 +993,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="glass-card rounded-xl p-3 text-center">
                     <MapPin className="w-4 h-4 text-indigo-500 mx-auto mb-1" />
-                    <p className="text-xs text-gray-600 font-medium">Thane</p>
+                    <p className="text-xs text-gray-600 font-medium">Chowk, Karjat</p>
                   </div>
                 </div>
 

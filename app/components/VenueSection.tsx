@@ -1,7 +1,7 @@
 'use client';
 
 import { eventData, resortInfo } from '../data/eventData';
-import { MapPin, Phone, Mail, Navigation, Check, ExternalLink, Car, Shield, Clock } from 'lucide-react';
+import { MapPin, Phone, Navigation, Check, ExternalLink, Car, Shield, Clock } from 'lucide-react';
 
 export default function VenueSection() {
   return (
@@ -33,41 +33,26 @@ export default function VenueSection() {
               </div>
             </div>
 
-            {/* Contact Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a
-                href={`tel:${resortInfo.phone}`}
-                className="group flex items-center gap-4 p-4 glass-card rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Phone className="w-6 h-6 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Call Us</p>
-                  <p className="font-semibold text-gray-800">{resortInfo.phone}</p>
-                </div>
-              </a>
-
-              <a
-                href={`mailto:${resortInfo.email}`}
-                className="group flex items-center gap-4 p-4 glass-card rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Mail className="w-6 h-6 text-pink-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Email</p>
-                  <p className="font-semibold text-gray-800 truncate">{resortInfo.email}</p>
-                </div>
-              </a>
-            </div>
+            {/* Contact Card */}
+            <a
+              href={`tel:${resortInfo.phone}`}
+              className="group flex items-center gap-4 p-4 glass-card rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-1 w-full"
+            >
+              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Phone className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Call Us</p>
+                <p className="font-semibold text-gray-800">{resortInfo.phone}</p>
+              </div>
+            </a>
 
             {/* Direction Button */}
             <a
               href={eventData.venue.mapUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3.5 btn-primary rounded-xl group"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 btn-primary rounded-xl group w-full"
             >
               <Navigation className="w-5 h-5" />
               Get Directions
