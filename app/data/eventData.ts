@@ -17,8 +17,8 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
 
   venue: {
     name: "Mangozzz Magical World Resort",
-    address: "Mumbai-Nashik Highway, Near Shahapur",
-    city: "Chowk, Karjat, Maharashtra 410201",
+    address: "wadi Post.Chowk, At.Asare, Tal, near Swaminarayan Gurukul School, Khalapur, Chouk",
+    city: "Maharashtra 410206",
     mapUrl: "https://maps.google.com/?q=Mangozzz+Resort+Shahapur",
   },
 
@@ -93,7 +93,6 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
     "Bonfire & BBQ",
     "Karaoke Lounge",
     "Photo Corners",
-    "Magic Shows",
     "Fireworks Display",
   ],
 
