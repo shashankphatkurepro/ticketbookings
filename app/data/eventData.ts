@@ -3,7 +3,7 @@ export const eventData = {
   subtitle: "The Ultimate Celebration",
   date: "31st December 2025",
   time: "7:00 PM onwards",
-  duration: "12+ Hours",
+  duration: "6+ Hours",
   ageRestriction: "All Ages",
   languages: ["Hindi", "English", "Marathi"],
   genres: ["Video Dj", "Night"],
