@@ -72,7 +72,7 @@ export default function HeroSection() {
           />
         ))}
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/75 to-black/90" />
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/30 via-transparent to-purple-900/30" />
       </div>
 
@@ -172,14 +172,20 @@ export default function HeroSection() {
           {/* Social Proof */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
             <div className="flex -space-x-3">
-              {[...Array(5)].map((_, i) => (
-                <div
+              {[
+                'https://randomuser.me/api/portraits/women/79.jpg',
+                'https://randomuser.me/api/portraits/men/86.jpg',
+                'https://randomuser.me/api/portraits/women/90.jpg',
+                'https://randomuser.me/api/portraits/men/75.jpg',
+                'https://randomuser.me/api/portraits/women/74.jpg',
+              ].map((avatar, i) => (
+                <img
                   key={i}
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold ring-2 ring-black/20"
+                  src={avatar}
+                  alt={`Attendee ${i + 1}`}
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-black/20"
                   style={{ zIndex: 5 - i }}
-                >
-                  {String.fromCharCode(65 + i)}
-                </div>
+                />
               ))}
             </div>
             <div className="flex items-center gap-3">

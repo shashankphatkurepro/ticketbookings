@@ -18,7 +18,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
   venue: {
     name: "Mangozzz Magical World Resort",
     address: "At. Asare Wadi, Post. Chowk, Near Swaminarayan Gurukul School, Tal. Khalapur",
-    city: "Maharashtra 410206",
+    city: "Chowk, Karjat",
     mapUrl: "https://maps.google.com/?q=Mangozzz+Resort+Shahapur",
   },
 
