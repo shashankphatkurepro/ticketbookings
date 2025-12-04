@@ -11,6 +11,8 @@ import LiquorBrandsSection from './components/LiquorBrandsSection';
 import VenueSection from './components/VenueSection';
 import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
+import ExitIntentPopup from './components/ExitIntentPopup';
+import SalesPopup from './components/SalesPopup';
 
 export default function EventPage() {
   return (
@@ -42,6 +44,10 @@ export default function EventPage() {
       </div>
 
       <Footer />
+
+      {/* Popups */}
+      <ExitIntentPopup />
+      <SalesPopup />
     </div>
   );
 }
