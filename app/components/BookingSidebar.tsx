@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { eventData } from '../data/eventData';
 import Link from 'next/link';
@@ -7,6 +8,14 @@ import { Calendar, Clock, MapPin, Minus, Plus, Ticket, ShoppingBag, Sparkles, Tr
 
 export default function BookingSidebar() {
   const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems } = useBooking();
+
+  // Generate random availability numbers around 60 for each ticket
+  const fakeAvailability = useMemo(() => {
+    return eventData.tickets.reduce((acc, ticket) => {
+      acc[ticket.id] = Math.floor(Math.random() * 30) + 45; // 45-74 range
+      return acc;
+    }, {} as Record<string, number>);
+  }, []);
 
   const getTicketQuantity = (ticketId: string) => {
     const item = booking.items.find((i) => i.ticketId === ticketId);
@@ -56,6 +65,14 @@ export default function BookingSidebar() {
 
       {/* Ticket Selection */}
       <div className="p-5">
+        {/* Price Increase Warning */}
+        <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-600 text-sm font-semibold">⚡ Price Increase Alert</span>
+          </div>
+          <p className="text-xs text-amber-800 mt-1">25% additional after 15th December</p>
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-gray-800">Select Tickets</h4>
           <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">Max 10 per order</span>
@@ -106,7 +123,7 @@ export default function BookingSidebar() {
                     </div>
                     <span className="text-xs text-emerald-600 flex items-center gap-1 font-medium mt-1">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                      {ticket.available} left
+                      {fakeAvailability[ticket.id]} left
                     </span>
                   </div>
 
