@@ -116,6 +116,33 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
     "Fireworks Display",
   ],
 
+  liquorBrands: [
+    { name: "Teachers", type: "Scotch" },
+    { name: "Black & White", type: "Scotch" },
+    { name: "Blenders Pride", type: "Whisky" },
+    { name: "Sula Wine", type: "Chenin" },
+    { name: "Old Monk", type: "Rum" },
+    { name: "Bacardi Carta Blanca", type: "Rum" },
+    { name: "Budweiser", type: "Mild/Strong" },
+    { name: "Sula Satori", type: "Strong" },
+    { name: "Smirnoff", type: "Vodka" },
+    { name: "Romanov", type: "Vodka" },
+  ],
+
+  foodMenu: {
+    starters: {
+      veg: ["Corn Spinach", "Hara Bhara Kabab", "Paneer Chilli Dry", "Paneer Tikka"],
+      nonVeg: ["Chicken Chilli Dry", "Kebab", "Chicken Malayani"],
+    },
+    soup: ["Veg Manchow"],
+    mainCourse: {
+      veg: ["Paneer Lababdar", "Veg Handi", "Jeera Rice", "Pad Fry"],
+      nonVeg: ["Chicken Masala", "Chicken Hyderabadi Biryani"],
+    },
+    bread: ["Assorted Rotis"],
+    dessert: ["Gulab Jamun", "Ice Cream"],
+  },
+
   amenities: [
     "Free Parking",
     "Valet Service",

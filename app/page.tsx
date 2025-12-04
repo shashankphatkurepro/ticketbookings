@@ -6,6 +6,8 @@ import BookingSidebar from './components/BookingSidebar';
 import AboutSection from './components/AboutSection';
 import HighlightsSection from './components/HighlightsSection';
 import ActivitiesSection from './components/ActivitiesSection';
+import FoodMenuSection from './components/FoodMenuSection';
+import LiquorBrandsSection from './components/LiquorBrandsSection';
 import VenueSection from './components/VenueSection';
 import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
@@ -24,6 +26,8 @@ export default function EventPage() {
             <AboutSection />
             <HighlightsSection />
             <ActivitiesSection />
+            <FoodMenuSection />
+            <LiquorBrandsSection />
             <VenueSection />
             <FAQSection />
           </div>
