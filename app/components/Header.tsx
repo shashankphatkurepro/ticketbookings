@@ -45,15 +45,15 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2 group">
               <img
                 src="https://mangozzz.com/images/logo.png"
                 alt="Mangozzz Resort"
-                className="w-10 h-10 rounded-xl object-contain group-hover:scale-105 transition-transform"
+                className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform"
               />
               <div className="hidden sm:block">
                 <span className="text-lg font-bold text-gray-800">Mangozzz</span>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest">Resort</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Magical Resort</p>
               </div>
             </Link>
 
