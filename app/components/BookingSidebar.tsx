@@ -61,7 +61,7 @@ export default function BookingSidebar() {
           <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">Max 10 per order</span>
         </div>
 
-        <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+        <div className="space-y-3">
           {eventData.tickets.map((ticket) => {
             const qty = getTicketQuantity(ticket.id);
             const isSelected = qty > 0;
@@ -144,7 +144,7 @@ export default function BookingSidebar() {
 
       {/* Footer */}
       {totalItems > 0 ? (
-        <div className="border-t border-gray-200 p-5 bg-gradient-to-br from-gray-50 to-indigo-50/30">
+        <div className="border-t border-gray-200 p-5 bg-white">
           <div className="flex items-center justify-between mb-4">
             <div>
               <span className="text-sm text-gray-600">{totalItems} Ticket{totalItems > 1 ? 's' : ''} Selected</span>
@@ -170,7 +170,7 @@ export default function BookingSidebar() {
           </p>
         </div>
       ) : (
-        <div className="border-t border-gray-200 p-6 bg-gradient-to-br from-gray-50 to-indigo-50/30 text-center">
+        <div className="border-t border-gray-200 p-6 bg-white text-center">
           <p className="text-sm text-gray-500 mb-1">Prices starting from</p>
           <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
             {formatPrice(Math.min(...eventData.tickets.map((t) => t.price)))}
