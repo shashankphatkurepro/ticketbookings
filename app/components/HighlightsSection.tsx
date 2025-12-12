@@ -2,13 +2,13 @@
 
 import { eventData } from '../data/eventData';
 import {
-  Sparkles, UtensilsCrossed, Wine, Music, Flame,
+  Sparkles, UtensilsCrossed, CupSoda, Music, Flame,
   Waves, Mountain, Gamepad2, Baby, Camera
 } from 'lucide-react';
 
 const highlightConfig = [
   { icon: UtensilsCrossed, bg: 'bg-orange-50', iconColor: 'text-orange-600' },
-  { icon: Wine, bg: 'bg-purple-50', iconColor: 'text-purple-600' },
+  { icon: CupSoda, bg: 'bg-cyan-50', iconColor: 'text-cyan-600' },
   { icon: Music, bg: 'bg-pink-50', iconColor: 'text-pink-600' },
   { icon: Flame, bg: 'bg-red-50', iconColor: 'text-red-600' },
   { icon: Waves, bg: 'bg-cyan-50', iconColor: 'text-cyan-600' },

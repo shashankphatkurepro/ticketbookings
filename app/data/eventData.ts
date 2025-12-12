@@ -80,9 +80,9 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       popular: false,
     },
     {
-      id: "couple-food-alcohol",
-      name: "Couple Food + Alcohol",
-      description: "Entry for 2 with unlimited food & alcohol",
+      id: "couple-food-drinks",
+      name: "Couple Food + Cool Drinks",
+      description: "Entry for 2 with unlimited food & cool drinks",
       price: 6499,
       originalPrice: 7999,
       available: 100,
@@ -116,17 +116,17 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
     "Fireworks Display",
   ],
 
-  liquorBrands: [
-    { name: "Teachers", type: "Scotch" },
-    { name: "Black & White", type: "Scotch" },
-    { name: "Blenders Pride", type: "Whisky" },
-    { name: "Sula Wine", type: "Chenin" },
-    { name: "Old Monk", type: "Rum" },
-    { name: "Bacardi Carta Blanca", type: "Rum" },
-    { name: "Budweiser", type: "Mild/Strong" },
-    { name: "Sula Satori", type: "Strong" },
-    { name: "Smirnoff", type: "Vodka" },
-    { name: "Romanov", type: "Vodka" },
+  coolDrinks: [
+    { name: "Coca-Cola", type: "Soft Drink" },
+    { name: "Pepsi", type: "Soft Drink" },
+    { name: "Sprite", type: "Soft Drink" },
+    { name: "Fanta", type: "Soft Drink" },
+    { name: "Limca", type: "Soft Drink" },
+    { name: "Thumbs Up", type: "Soft Drink" },
+    { name: "Fresh Lime Soda", type: "Mocktail" },
+    { name: "Virgin Mojito", type: "Mocktail" },
+    { name: "Mango Lassi", type: "Beverage" },
+    { name: "Fresh Juices", type: "Juice" },
   ],
 
   foodMenu: {

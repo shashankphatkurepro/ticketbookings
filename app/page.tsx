@@ -7,7 +7,7 @@ import AboutSection from './components/AboutSection';
 import HighlightsSection from './components/HighlightsSection';
 import ActivitiesSection from './components/ActivitiesSection';
 import FoodMenuSection from './components/FoodMenuSection';
-import LiquorBrandsSection from './components/LiquorBrandsSection';
+import CoolDrinksSection from './components/CoolDrinksSection';
 import VenueSection from './components/VenueSection';
 import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
@@ -29,7 +29,7 @@ export default function EventPage() {
             <HighlightsSection />
             <ActivitiesSection />
             <FoodMenuSection />
-            <LiquorBrandsSection />
+            <CoolDrinksSection />
             <VenueSection />
             <FAQSection />
           </div>

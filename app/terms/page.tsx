@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, FileText, Shield, Users, Wine, AlertTriangle, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, FileText, Shield, Users, AlertTriangle, Phone, MapPin } from 'lucide-react';
 
 export default function TermsPage() {
   return (
@@ -62,7 +62,6 @@ export default function TermsPage() {
               <h3 className="font-semibold text-gray-800 mb-2">Age Restrictions</h3>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Primary booking guest must be 18 years or older.</li>
-                <li>Alcohol will strictly be served only to guests above the legal drinking age of 21 years.</li>
               </ul>
             </div>
 
@@ -99,7 +98,7 @@ export default function TermsPage() {
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Illegal substances, drugs, or narcotics.</li>
                 <li>Weapons, sharp objects, or flammable materials.</li>
-                <li>Outside food, beverages, or alcohol.</li>
+                <li>Outside food and beverages.</li>
               </ul>
             </div>
 
@@ -110,40 +109,13 @@ export default function TermsPage() {
           </div>
         </div>
 
-        {/* Section 3: Alcohol & Food Service */}
-        <div className="glass-strong rounded-3xl p-6 lg:p-8 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-              <Wine className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">3. Alcohol & Food Service</h2>
-          </div>
-
-          <div className="space-y-4 text-gray-700">
-            <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold text-gray-800 mb-2">Service Timings</h3>
-              <p>Alcohol service will commence at the start of the event and strictly stop at 11:45 PM as per government regulations.</p>
-            </div>
-
-            <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold text-gray-800 mb-2">Responsible Consumption</h3>
-              <p>Guests consuming excess alcohol will be monitored. Management reserves the right to refuse alcohol service to any guest who appears intoxicated or behaves inappropriately.</p>
-            </div>
-
-            <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold text-gray-800 mb-2">Buffet</h3>
-              <p>The unlimited buffet is for consumption at the designated dining venue only. Wastage of food is discouraged.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 4: Liability & Safety */}
+        {/* Section 3: Liability & Safety */}
         <div className="glass-strong rounded-3xl p-6 lg:p-8 mb-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
               <AlertTriangle className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800">4. Liability & Safety</h2>
+            <h2 className="text-xl font-bold text-gray-800">3. Liability & Safety</h2>
           </div>
 
           <div className="space-y-4 text-gray-700">

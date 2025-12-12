@@ -39,7 +39,7 @@ const indianNames = [
 const ticketTypes = [
   'Couple with Food',
   'Stag with Food',
-  'Couple Food + Alcohol',
+  'Couple Food + Cool Drinks',
   'Stag with Food and Drinks',
   'Kids 5–10 Years Pass',
   'Kids 10 to 15',
