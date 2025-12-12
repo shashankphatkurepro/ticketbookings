@@ -60,8 +60,9 @@ export default function CheckoutPage() {
 
   const totalItems = getTotalItems();
   const subtotal = getTotalAmount();
+  const gst = Math.round(subtotal * 0.18);
   const convenienceFee = Math.round(subtotal * 0.02);
-  const totalAmount = subtotal + convenienceFee;
+  const totalAmount = subtotal + gst + convenienceFee;
 
   const copyBookingId = () => {
     navigator.clipboard.writeText(bookingId);
@@ -1017,6 +1018,10 @@ export default function CheckoutPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-800 font-medium">{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">GST (18%)</span>
+                    <span className="text-gray-800 font-medium">{formatPrice(gst)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Convenience Fee (2%)</span>
