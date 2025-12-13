@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 as LoaderSpinner } from 'lucide-react';
 import Link from 'next/link';
 import { useBooking } from '../context/BookingContext';
 import { eventData } from '../data/eventData';
@@ -34,21 +35,56 @@ import {
   Check,
 } from 'lucide-react';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
-  const { booking, removeFromCart, addToCart, updateQuantity, getTotalAmount, getTotalItems, setCustomerInfo, clearCart } = useBooking();
+  const searchParams = useSearchParams();
+  const { booking, removeFromCart, addToCart, updateQuantity, getTotalAmount, getTotalItems, setCustomerInfo, clearCart, setPaymentPending } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [bookingId] = useState(() => `MNG${Date.now().toString(36).toUpperCase()}`);
+  const [bookingId, setBookingId] = useState(() => `MNG${Date.now().toString(36).toUpperCase()}`);
   const [qrCodes, setQrCodes] = useState<{ [key: string]: string }>({});
   const [copied, setCopied] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: booking.customerInfo.name,
     email: booking.customerInfo.email,
     phone: booking.customerInfo.phone,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Handle successful payment redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const orderId = searchParams.get('orderId');
+
+    if (success === 'true' && orderId) {
+      // Payment was successful, generate QR codes and show success
+      setBookingId(orderId);
+      generateQRCodes(orderId);
+      setIsComplete(true);
+    }
+  }, [searchParams]);
+
+  const generateQRCodes = async (orderIdToUse: string) => {
+    const generatedQrCodes: { [key: string]: string } = {};
+    for (const item of booking.items) {
+      for (let i = 0; i < item.quantity; i++) {
+        const ticketCode = `${orderIdToUse}-${item.ticketId.toUpperCase()}-${i + 1}`;
+        try {
+          const qrDataUrl = await QRCode.toDataURL(ticketCode, {
+            width: 200,
+            margin: 1,
+            color: { dark: '#1f2937', light: '#ffffff' }
+          });
+          generatedQrCodes[ticketCode] = qrDataUrl;
+        } catch (e) {
+          console.log('QR generation failed for', ticketCode);
+        }
+      }
+    }
+    setQrCodes(generatedQrCodes);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -427,29 +463,49 @@ export default function CheckoutPage() {
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setPaymentError(null);
 
-    // Generate QR codes for each ticket
-    const generatedQrCodes: { [key: string]: string } = {};
-    for (const item of booking.items) {
-      for (let i = 0; i < item.quantity; i++) {
-        const ticketCode = `${bookingId}-${item.ticketId.toUpperCase()}-${i + 1}`;
-        try {
-          const qrDataUrl = await QRCode.toDataURL(ticketCode, {
-            width: 200,
-            margin: 1,
-            color: { dark: '#1f2937', light: '#ffffff' }
-          });
-          generatedQrCodes[ticketCode] = qrDataUrl;
-        } catch (e) {
-          console.log('QR generation failed for', ticketCode);
-        }
+    try {
+      // Call PhonePe payment initiation API
+      const response = await fetch('/api/payment/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          merchantOrderId: bookingId,
+          amount: totalAmount,
+          customerInfo: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+          },
+          items: booking.items.map(item => ({
+            id: item.ticketId,
+            name: item.ticketName,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data.redirectUrl) {
+        // Set payment as pending in context
+        setPaymentPending(bookingId);
+
+        // Redirect to PhonePe payment page
+        window.location.href = data.data.redirectUrl;
+      } else {
+        setPaymentError(data.error || 'Payment initiation failed. Please try again.');
+        setIsProcessing(false);
       }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentError('An error occurred. Please try again.');
+      setIsProcessing(false);
     }
-    setQrCodes(generatedQrCodes);
-
-    setIsProcessing(false);
-    setIsComplete(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -948,14 +1004,45 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Payment Gateway Placeholder */}
-                <div className="p-8 border-2 border-dashed border-gray-200 rounded-2xl text-center mb-6">
-                  <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                    <CreditCard className="w-8 h-8 text-gray-400" />
+                {/* PhonePe Payment Section */}
+                <div className="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl mb-6">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none">
+                        <circle cx="12" cy="12" r="10" fill="#5f259f"/>
+                        <path d="M8 12.5l2.5 2.5L16 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">Pay with PhonePe</p>
+                      <p className="text-xs text-gray-500">UPI, Cards, Net Banking & More</p>
+                    </div>
                   </div>
-                  <p className="text-gray-600 font-medium mb-2">Payment Gateway Integration</p>
-                  <p className="text-sm text-gray-400">Razorpay / Stripe / PayU integration would go here</p>
+
+                  <div className="flex flex-wrap justify-center gap-2 mb-4">
+                    <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-600 shadow-sm">UPI</span>
+                    <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-600 shadow-sm">Credit Card</span>
+                    <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-600 shadow-sm">Debit Card</span>
+                    <span className="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-600 shadow-sm">Net Banking</span>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center">
+                    You will be redirected to PhonePe secure payment page
+                  </p>
                 </div>
+
+                {/* Payment Error Message */}
+                {paymentError && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-2xl mb-6">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-red-800">Payment Failed</p>
+                        <p className="text-sm text-red-600">{paymentError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Security Badge */}
                 <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
@@ -1078,5 +1165,27 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function CheckoutLoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-10">
+      <div className="max-w-md w-full glass-strong rounded-3xl p-8 text-center">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <LoaderSpinner className="w-10 h-10 text-white animate-spin" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading Checkout...</h1>
+        <p className="text-gray-600">Please wait...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<CheckoutLoadingFallback />}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

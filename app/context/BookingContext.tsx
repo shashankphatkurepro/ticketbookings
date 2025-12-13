@@ -9,6 +9,13 @@ interface BookingItem {
   quantity: number;
 }
 
+interface PaymentInfo {
+  merchantOrderId: string | null;
+  phonePeOrderId: string | null;
+  status: 'idle' | 'pending' | 'completed' | 'failed';
+  transactionId: string | null;
+}
+
 interface BookingState {
   items: BookingItem[];
   customerInfo: {
@@ -16,6 +23,7 @@ interface BookingState {
     email: string;
     phone: string;
   };
+  payment: PaymentInfo;
 }
 
 interface BookingContextType {
@@ -27,7 +35,18 @@ interface BookingContextType {
   getTotalAmount: () => number;
   getTotalItems: () => number;
   setCustomerInfo: (info: { name: string; email: string; phone: string }) => void;
+  setPaymentPending: (merchantOrderId: string) => void;
+  setPaymentComplete: (merchantOrderId: string, phonePeOrderId: string) => void;
+  setPaymentFailed: () => void;
+  resetPayment: () => void;
 }
+
+const initialPaymentState: PaymentInfo = {
+  merchantOrderId: null,
+  phonePeOrderId: null,
+  status: 'idle',
+  transactionId: null,
+};
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
@@ -35,6 +54,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBooking] = useState<BookingState>({
     items: [],
     customerInfo: { name: '', email: '', phone: '' },
+    payment: initialPaymentState,
   });
 
   const addToCart = (ticketId: string, ticketName: string, price: number) => {
@@ -99,7 +119,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = () => {
-    setBooking((prev) => ({ ...prev, items: [] }));
+    setBooking((prev) => ({
+      ...prev,
+      items: [],
+      payment: initialPaymentState,
+    }));
   };
 
   const getTotalAmount = () => {
@@ -117,6 +141,46 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setBooking((prev) => ({ ...prev, customerInfo: info }));
   };
 
+  const setPaymentPending = (merchantOrderId: string) => {
+    setBooking((prev) => ({
+      ...prev,
+      payment: {
+        ...prev.payment,
+        merchantOrderId,
+        status: 'pending',
+      },
+    }));
+  };
+
+  const setPaymentComplete = (merchantOrderId: string, phonePeOrderId: string) => {
+    setBooking((prev) => ({
+      ...prev,
+      payment: {
+        merchantOrderId,
+        phonePeOrderId,
+        status: 'completed',
+        transactionId: phonePeOrderId,
+      },
+    }));
+  };
+
+  const setPaymentFailed = () => {
+    setBooking((prev) => ({
+      ...prev,
+      payment: {
+        ...prev.payment,
+        status: 'failed',
+      },
+    }));
+  };
+
+  const resetPayment = () => {
+    setBooking((prev) => ({
+      ...prev,
+      payment: initialPaymentState,
+    }));
+  };
+
   return (
     <BookingContext.Provider
       value={{
@@ -128,6 +192,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         getTotalAmount,
         getTotalItems,
         setCustomerInfo,
+        setPaymentPending,
+        setPaymentComplete,
+        setPaymentFailed,
+        resetPayment,
       }}
     >
       {children}
