@@ -152,8 +152,36 @@ function CheckoutContent() {
   const handlePaymentConfirmation = async () => {
     setIsProcessing(true);
 
-    // Simulate a short delay for UX
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Save booking to Supabase database
+      const bookingData = {
+        customer_name: formData.name,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        items: booking.items,
+        group_booking: hasGroupBooking ? booking.groupBooking : null,
+        subtotal: subtotal,
+        group_total: groupBookingTotal,
+        total_amount: totalAmount,
+        source: 'website',
+      };
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update booking ID with the one from database
+        setBookingId(data.bookingId);
+      } else {
+        console.error('Failed to save booking to database');
+      }
+    } catch (error) {
+      console.error('Error saving booking:', error);
+    }
 
     // Mark payment as complete in context
     setPaymentComplete(bookingId, `UPI-${Date.now()}`);
