@@ -47,7 +47,7 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
               <img
-                src="https://mangozzz.com/images/logo.png"
+                src="/logo.png"
                 alt="Mangozzz Resort"
                 className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform"
               />

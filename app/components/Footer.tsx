@@ -31,7 +31,7 @@ export default function Footer() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-3 mb-5">
                 <img
-                  src="https://mangozzz.com/images/logo.png"
+                  src="/logo.png"
                   alt="Mangozzz Resort"
                   className="w-12 h-12 rounded-2xl object-contain"
                 />

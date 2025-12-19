@@ -367,7 +367,7 @@ Please find the payment screenshot attached.`;
 
           <div className="flex items-center gap-2">
             <img
-              src="https://mangozzz.com/images/logo.png"
+              src="/logo.png"
               alt="Mangozzz Resort"
               className="w-10 h-10 rounded-xl object-contain"
             />
