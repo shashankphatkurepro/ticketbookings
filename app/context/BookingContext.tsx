@@ -11,9 +11,8 @@ interface BookingItem {
 
 interface PaymentInfo {
   merchantOrderId: string | null;
-  phonePeOrderId: string | null;
-  status: 'idle' | 'pending' | 'completed' | 'failed';
   transactionId: string | null;
+  status: 'idle' | 'pending' | 'completed' | 'failed';
 }
 
 interface BookingState {
@@ -36,16 +35,15 @@ interface BookingContextType {
   getTotalItems: () => number;
   setCustomerInfo: (info: { name: string; email: string; phone: string }) => void;
   setPaymentPending: (merchantOrderId: string) => void;
-  setPaymentComplete: (merchantOrderId: string, phonePeOrderId: string) => void;
+  setPaymentComplete: (merchantOrderId: string, transactionId: string) => void;
   setPaymentFailed: () => void;
   resetPayment: () => void;
 }
 
 const initialPaymentState: PaymentInfo = {
   merchantOrderId: null,
-  phonePeOrderId: null,
-  status: 'idle',
   transactionId: null,
+  status: 'idle',
 };
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -152,14 +150,13 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const setPaymentComplete = (merchantOrderId: string, phonePeOrderId: string) => {
+  const setPaymentComplete = (merchantOrderId: string, transactionId: string) => {
     setBooking((prev) => ({
       ...prev,
       payment: {
         merchantOrderId,
-        phonePeOrderId,
+        transactionId,
         status: 'completed',
-        transactionId: phonePeOrderId,
       },
     }));
   };

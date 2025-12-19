@@ -5,7 +5,8 @@
       "Bash(tree:*)",
       "mcp__firecrawl__firecrawl_search",
       "mcp__firecrawl__firecrawl_scrape",
-      "Bash(npm i:*)"
+      "Bash(npm i:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
