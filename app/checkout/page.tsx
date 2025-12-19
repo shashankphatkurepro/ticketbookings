@@ -328,25 +328,111 @@ Please find the payment screenshot attached.`;
     );
   }
 
-  // Empty Cart State
+  // Empty Cart State - Show available tickets
   if (totalItems === 0 && step === 1) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6 sm:py-10">
-        <div className="max-w-md w-full glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 text-center">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-            <Ticket className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+      <div className="min-h-screen px-3 sm:px-4 py-6 sm:py-10">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 glass-card rounded-lg sm:rounded-xl text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="font-medium text-sm sm:text-base">Back</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="Mangozzz Resort"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-contain"
+              />
+            </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1.5 sm:mb-2">Your Cart is Empty</h1>
-          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-            You haven&apos;t selected any tickets yet. Browse our ticket options and add them to your cart.
-          </p>
-          <Link
-            href="/#tickets"
-            className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg sm:rounded-xl font-semibold shadow-lg shadow-indigo-500/25 transition-all text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Browse Tickets
-          </Link>
+
+          {/* Empty Cart Message */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <Ticket className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1.5 sm:mb-2">Your Cart is Empty</h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Select tickets below to add them to your cart
+            </p>
+          </div>
+
+          {/* Available Tickets */}
+          <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/25">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Available Tickets</h2>
+                <p className="text-xs sm:text-sm text-gray-500">New Year&apos;s Eve 2026 · 31st December</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:gap-4">
+              {eventData.tickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 md:p-5 glass-card rounded-xl sm:rounded-2xl"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{ticket.name}</h3>
+                      {ticket.popular && (
+                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full flex items-center gap-1">
+                          <TrendingUp className="w-2.5 h-2.5" />
+                          Popular
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">{ticket.description}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <p className="text-base sm:text-lg font-bold text-gray-800">
+                        {formatPrice(ticket.price)}
+                      </p>
+                      {ticket.originalPrice > ticket.price && (
+                        <p className="text-xs sm:text-sm text-gray-400 line-through">
+                          {formatPrice(ticket.originalPrice)}
+                        </p>
+                      )}
+                      <span className="text-xs sm:text-sm font-normal text-gray-500">/ person</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => addToCart(ticket.id, ticket.name, ticket.price)}
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg sm:rounded-xl font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all hover:-translate-y-0.5 text-sm sm:text-base"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Event Info Footer */}
+          <div className="mt-4 sm:mt-6 glass-card rounded-xl sm:rounded-2xl p-3 sm:p-4">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-pink-500" />
+                <span>31st Dec 2025</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-purple-500" />
+                <span>7:00 PM onwards</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-indigo-500" />
+                <span>Karjat, Chowk</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -415,7 +501,7 @@ Please find the payment screenshot attached.`;
 
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-1 lg:order-1">
             {/* Step 1: Review Tickets */}
             {step === 1 && (
               <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8">
@@ -735,7 +821,7 @@ Please find the payment screenshot attached.`;
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1 order-1 lg:order-2">
+          <div className="lg:col-span-1 order-2 lg:order-2">
             <div className="glass-strong rounded-2xl sm:rounded-3xl overflow-hidden lg:sticky lg:top-8">
               <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-3 sm:p-4 lg:p-5">
                 <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
