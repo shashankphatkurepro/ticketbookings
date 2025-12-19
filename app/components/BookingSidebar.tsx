@@ -65,14 +65,6 @@ export default function BookingSidebar() {
 
       {/* Ticket Selection */}
       <div className="p-5">
-        {/* Price Increase Warning */}
-        <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
-          <div className="flex items-center gap-2">
-            <span className="text-amber-600 text-sm font-semibold">⚡ Price Increase Alert</span>
-          </div>
-          <p className="text-xs text-amber-800 mt-1">25% additional after 15th December</p>
-        </div>
-
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-gray-800">Select Tickets</h4>
           <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">Max 10 per order</span>
