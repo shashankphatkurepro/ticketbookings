@@ -128,8 +128,8 @@ function CheckoutContent() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    } else if (!/^0?[6-9]\d{9}$/.test(formData.phone.replace(/\s/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number';
     }
 
     setErrors(newErrors);
