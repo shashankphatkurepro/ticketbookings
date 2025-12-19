@@ -1,13 +1,34 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { eventData } from '../data/eventData';
 import Link from 'next/link';
-import { Calendar, Clock, MapPin, Minus, Plus, Ticket, ShoppingBag, Sparkles, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, MapPin, Minus, Plus, Ticket, ShoppingBag, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 export default function BookingSidebar() {
   const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems } = useBooking();
+
+  // Group booking state
+  const [maleGroupCount, setMaleGroupCount] = useState(0);
+  const [femaleGroupCount, setFemaleGroupCount] = useState(0);
+
+  // Group pricing logic
+  const getMalePrice = (count: number) => {
+    if (count >= 10) return 2999;
+    if (count >= 5) return 3199;
+    return 3499; // 1-4 people
+  };
+
+  const getFemalePrice = (count: number) => {
+    if (count >= 10) return 2199;
+    if (count >= 5) return 2399;
+    return 2499; // 1-4 people
+  };
+
+  const maleGroupTotal = maleGroupCount * getMalePrice(maleGroupCount);
+  const femaleGroupTotal = femaleGroupCount * getFemalePrice(femaleGroupCount);
+  const groupBookingTotal = maleGroupTotal + femaleGroupTotal;
 
   // Fixed availability numbers to avoid hydration mismatch
   const fakeAvailability = useMemo(() => {
@@ -149,16 +170,195 @@ export default function BookingSidebar() {
             );
           })}
         </div>
+
+        {/* Separator */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t-2 border-dashed border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-4 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Group Deals</span>
+          </div>
+        </div>
+
+        {/* Group Booking Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-[2px]">
+          <div className="relative bg-white rounded-2xl p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-800">Group Booking</h4>
+                  <p className="text-xs text-gray-500">Food & drinks included</p>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">Save More</span>
+            </div>
+
+            {/* Male Group */}
+            <div className={`p-4 rounded-xl mb-3 transition-all duration-300 ${
+              maleGroupCount > 0
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 ring-2 ring-blue-200'
+                : 'bg-gray-50 hover:bg-gray-100'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
+                    maleGroupCount > 0 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    M
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-800">Male</h5>
+                    <p className="text-xs text-gray-500">With food & drinks</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-200">
+                  <button
+                    onClick={() => setMaleGroupCount(Math.max(0, maleGroupCount - 1))}
+                    disabled={maleGroupCount === 0}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-l-xl transition-colors disabled:opacity-30"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-10 text-center font-bold text-gray-800 text-lg">{maleGroupCount}</span>
+                  <button
+                    onClick={() => setMaleGroupCount(Math.min(20, maleGroupCount + 1))}
+                    disabled={maleGroupCount >= 20}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-r-xl transition-colors disabled:opacity-30"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-gray-800">{formatPrice(getMalePrice(maleGroupCount))}</span>
+                  <span className="text-sm text-gray-500">/head</span>
+                  {maleGroupCount >= 10 && (
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">BEST RATE</span>
+                  )}
+                </div>
+                {maleGroupCount > 0 && (
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-blue-600">{formatPrice(maleGroupTotal)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Female Group */}
+            <div className={`p-4 rounded-xl transition-all duration-300 ${
+              femaleGroupCount > 0
+                ? 'bg-gradient-to-r from-pink-50 to-rose-50 ring-2 ring-pink-200'
+                : 'bg-gray-50 hover:bg-gray-100'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
+                    femaleGroupCount > 0 ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    F
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-800">Female</h5>
+                    <p className="text-xs text-gray-500">With food & drinks</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-200">
+                  <button
+                    onClick={() => setFemaleGroupCount(Math.max(0, femaleGroupCount - 1))}
+                    disabled={femaleGroupCount === 0}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-l-xl transition-colors disabled:opacity-30"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-10 text-center font-bold text-gray-800 text-lg">{femaleGroupCount}</span>
+                  <button
+                    onClick={() => setFemaleGroupCount(Math.min(20, femaleGroupCount + 1))}
+                    disabled={femaleGroupCount >= 20}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-r-xl transition-colors disabled:opacity-30"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-gray-800">{formatPrice(getFemalePrice(femaleGroupCount))}</span>
+                  <span className="text-sm text-gray-500">/head</span>
+                  {femaleGroupCount >= 10 && (
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">BEST RATE</span>
+                  )}
+                </div>
+                {femaleGroupCount > 0 && (
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-pink-600">{formatPrice(femaleGroupTotal)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Pricing Tiers */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                <p className="text-[10px] text-gray-400 uppercase font-semibold">1-4</p>
+                <p className="text-[10px] text-gray-600">M: ₹3,499</p>
+                <p className="text-[10px] text-gray-600">F: ₹2,499</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                <p className="text-[10px] text-gray-400 uppercase font-semibold">5-9</p>
+                <p className="text-[10px] text-gray-600">M: ₹3,199</p>
+                <p className="text-[10px] text-gray-600">F: ₹2,399</p>
+              </div>
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-2 text-center border border-emerald-200">
+                <p className="text-[10px] text-emerald-600 uppercase font-semibold">10-20</p>
+                <p className="text-[10px] text-emerald-700 font-medium">M: ₹2,999</p>
+                <p className="text-[10px] text-emerald-700 font-medium">F: ₹2,199</p>
+              </div>
+            </div>
+
+            {/* Group Total */}
+            {groupBookingTotal > 0 && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs text-emerald-100">Group Total</p>
+                    <p className="text-xs text-white/80">
+                      {maleGroupCount > 0 && `${maleGroupCount} Male`}
+                      {maleGroupCount > 0 && femaleGroupCount > 0 && ' + '}
+                      {femaleGroupCount > 0 && `${femaleGroupCount} Female`}
+                    </p>
+                  </div>
+                  <span className="text-2xl font-bold text-white">{formatPrice(groupBookingTotal)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
-      {totalItems > 0 ? (
+      {(totalItems > 0 || groupBookingTotal > 0) ? (
         <div className="border-t border-gray-200 p-5 bg-white">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <span className="text-sm text-gray-600">{totalItems} Ticket{totalItems > 1 ? 's' : ''} Selected</span>
+              {totalItems > 0 && (
+                <span className="text-sm text-gray-600">{totalItems} Ticket{totalItems > 1 ? 's' : ''} Selected</span>
+              )}
+              {totalItems > 0 && groupBookingTotal > 0 && (
+                <span className="text-sm text-gray-600"> + Group</span>
+              )}
+              {totalItems === 0 && groupBookingTotal > 0 && (
+                <span className="text-sm text-gray-600">
+                  Group: {maleGroupCount > 0 ? `${maleGroupCount} Male` : ''}{maleGroupCount > 0 && femaleGroupCount > 0 ? ', ' : ''}{femaleGroupCount > 0 ? `${femaleGroupCount} Female` : ''}
+                </span>
+              )}
               <p className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {formatPrice(totalAmount)}
+                {formatPrice(totalAmount + groupBookingTotal)}
               </p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-full">
