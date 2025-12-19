@@ -10,10 +10,19 @@ export default function BookingSidebar() {
   const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems } = useBooking();
 
   // Group booking state
+  const [nonAlcoholCount, setNonAlcoholCount] = useState(0);
   const [maleGroupCount, setMaleGroupCount] = useState(0);
   const [femaleGroupCount, setFemaleGroupCount] = useState(0);
 
-  // Group pricing logic
+  // Group pricing logic - Without Alcohol
+  const getNonAlcoholPrice = (count: number) => {
+    if (count >= 20) return 1199;
+    if (count >= 10) return 1299;
+    if (count >= 5) return 1399;
+    return 1499; // 1-4 people
+  };
+
+  // Group pricing logic - With Alcohol
   const getMalePrice = (count: number) => {
     if (count >= 10) return 2999;
     if (count >= 5) return 3199;
@@ -26,9 +35,10 @@ export default function BookingSidebar() {
     return 2499; // 1-4 people
   };
 
+  const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
   const maleGroupTotal = maleGroupCount * getMalePrice(maleGroupCount);
   const femaleGroupTotal = femaleGroupCount * getFemalePrice(femaleGroupCount);
-  const groupBookingTotal = maleGroupTotal + femaleGroupTotal;
+  const groupBookingTotal = nonAlcoholTotal + maleGroupTotal + femaleGroupTotal;
 
   // Fixed availability numbers to avoid hydration mismatch
   const fakeAvailability = useMemo(() => {
@@ -198,6 +208,87 @@ export default function BookingSidebar() {
               <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase">Save More</span>
             </div>
 
+            {/* Without Alcohol Group */}
+            <div className={`p-4 rounded-xl mb-3 transition-all duration-300 ${
+              nonAlcoholCount > 0
+                ? 'bg-gradient-to-r from-amber-50 to-orange-50 ring-2 ring-amber-200'
+                : 'bg-gray-50 hover:bg-gray-100'
+            }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${
+                    nonAlcoholCount > 0 ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    🍽️
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-gray-700 text-xs">Without Alcohol</h5>
+                    <p className="text-xs text-gray-400">Food only</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-200">
+                  <button
+                    onClick={() => setNonAlcoholCount(Math.max(0, nonAlcoholCount - 1))}
+                    disabled={nonAlcoholCount === 0}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-l-xl transition-colors disabled:opacity-30"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-10 text-center font-bold text-gray-800 text-lg">{nonAlcoholCount}</span>
+                  <button
+                    onClick={() => setNonAlcoholCount(Math.min(30, nonAlcoholCount + 1))}
+                    disabled={nonAlcoholCount >= 30}
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-r-xl transition-colors disabled:opacity-30"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-gray-800">{formatPrice(getNonAlcoholPrice(nonAlcoholCount))}</span>
+                  <span className="text-sm text-gray-500">/head</span>
+                  {nonAlcoholCount >= 20 && (
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">BEST RATE</span>
+                  )}
+                </div>
+                {nonAlcoholCount > 0 && (
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-amber-600">{formatPrice(nonAlcoholTotal)}</span>
+                  </div>
+                )}
+              </div>
+              {/* Non-Alcohol Pricing Tiers */}
+              <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-4 gap-1">
+                <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 1 && nonAlcoholCount <= 4 ? 'bg-amber-100' : 'bg-gray-50'}`}>
+                  <p className="text-[9px] text-gray-400">1-4</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,499</p>
+                </div>
+                <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 5 && nonAlcoholCount <= 9 ? 'bg-amber-100' : 'bg-gray-50'}`}>
+                  <p className="text-[9px] text-gray-400">5-9</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,399</p>
+                </div>
+                <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 10 && nonAlcoholCount <= 19 ? 'bg-amber-100' : 'bg-gray-50'}`}>
+                  <p className="text-[9px] text-gray-400">10-19</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,299</p>
+                </div>
+                <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 20 ? 'bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-200' : 'bg-gray-50'}`}>
+                  <p className="text-[9px] text-emerald-600">20-30</p>
+                  <p className="text-[10px] text-emerald-700 font-bold">₹1,199</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-[10px] text-gray-400 font-semibold uppercase">With Alcohol</span>
+              </div>
+            </div>
+
             {/* Male Group */}
             <div className={`p-4 rounded-xl mb-3 transition-all duration-300 ${
               maleGroupCount > 0
@@ -213,7 +304,7 @@ export default function BookingSidebar() {
                   </div>
                   <div>
                     <h5 className="font-semibold text-gray-800">Male</h5>
-                    <p className="text-xs text-gray-500">With food & drinks</p>
+                    <p className="text-[10px] text-gray-400">With food & drinks</p>
                   </div>
                 </div>
                 <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-200">
@@ -265,7 +356,7 @@ export default function BookingSidebar() {
                   </div>
                   <div>
                     <h5 className="font-semibold text-gray-800">Female</h5>
-                    <p className="text-xs text-gray-500">With food & drinks</p>
+                    <p className="text-[10px] text-gray-400">With food & drinks</p>
                   </div>
                 </div>
                 <div className="flex items-center bg-white rounded-xl shadow-sm border border-gray-200">
@@ -305,32 +396,34 @@ export default function BookingSidebar() {
             {/* Pricing Tiers */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div className="bg-gray-50 rounded-lg p-2 text-center">
-                <p className="text-[10px] text-gray-400 uppercase font-semibold">1-4</p>
-                <p className="text-[10px] text-gray-600">M: ₹3,499</p>
-                <p className="text-[10px] text-gray-600">F: ₹2,499</p>
+                <p className="text-[9px] text-gray-400">1-4</p>
+                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹3,499</span></p>
+                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,499</span></p>
               </div>
               <div className="bg-gray-50 rounded-lg p-2 text-center">
-                <p className="text-[10px] text-gray-400 uppercase font-semibold">5-9</p>
-                <p className="text-[10px] text-gray-600">M: ₹3,199</p>
-                <p className="text-[10px] text-gray-600">F: ₹2,399</p>
+                <p className="text-[9px] text-gray-400">5-9</p>
+                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹3,199</span></p>
+                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,399</span></p>
               </div>
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-2 text-center border border-emerald-200">
-                <p className="text-[10px] text-emerald-600 uppercase font-semibold">10-20</p>
-                <p className="text-[10px] text-emerald-700 font-medium">M: ₹2,999</p>
-                <p className="text-[10px] text-emerald-700 font-medium">F: ₹2,199</p>
+                <p className="text-[9px] text-emerald-600">10-20</p>
+                <p className="text-[10px] text-emerald-700">M: <span className="font-bold">₹2,999</span></p>
+                <p className="text-[10px] text-emerald-700">F: <span className="font-bold">₹2,199</span></p>
               </div>
             </div>
 
             {/* Group Total */}
             {groupBookingTotal > 0 && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
+              <div className="mt-4 p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-xs text-emerald-100">Group Total</p>
                     <p className="text-xs text-white/80">
-                      {maleGroupCount > 0 && `${maleGroupCount} Male`}
+                      {nonAlcoholCount > 0 && `${nonAlcoholCount} Non-Alc`}
+                      {nonAlcoholCount > 0 && (maleGroupCount > 0 || femaleGroupCount > 0) && ' · '}
+                      {maleGroupCount > 0 && `${maleGroupCount}M`}
                       {maleGroupCount > 0 && femaleGroupCount > 0 && ' + '}
-                      {femaleGroupCount > 0 && `${femaleGroupCount} Female`}
+                      {femaleGroupCount > 0 && `${femaleGroupCount}F`}
                     </p>
                   </div>
                   <span className="text-2xl font-bold text-white">{formatPrice(groupBookingTotal)}</span>
@@ -354,7 +447,7 @@ export default function BookingSidebar() {
               )}
               {totalItems === 0 && groupBookingTotal > 0 && (
                 <span className="text-sm text-gray-600">
-                  Group: {maleGroupCount > 0 ? `${maleGroupCount} Male` : ''}{maleGroupCount > 0 && femaleGroupCount > 0 ? ', ' : ''}{femaleGroupCount > 0 ? `${femaleGroupCount} Female` : ''}
+                  Group: {nonAlcoholCount > 0 ? `${nonAlcoholCount} Non-Alc` : ''}{nonAlcoholCount > 0 && (maleGroupCount > 0 || femaleGroupCount > 0) ? ', ' : ''}{maleGroupCount > 0 ? `${maleGroupCount}M` : ''}{maleGroupCount > 0 && femaleGroupCount > 0 ? '+' : ''}{femaleGroupCount > 0 ? `${femaleGroupCount}F` : ''}
                 </span>
               )}
               <p className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
