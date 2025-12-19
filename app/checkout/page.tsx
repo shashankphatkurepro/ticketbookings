@@ -75,9 +75,7 @@ function CheckoutContent() {
 
   const totalItems = getTotalItems();
   const subtotal = getTotalAmount();
-  const gst = Math.round(subtotal * 0.18);
-  const convenienceFee = Math.round(subtotal * 0.02);
-  const totalAmount = subtotal + gst + convenienceFee;
+  const totalAmount = subtotal;
 
   // Generate UPI QR code when reaching payment step
   useEffect(() => {
@@ -605,10 +603,9 @@ Please find the payment screenshot attached.`;
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="Enter your full name"
-                        className={`w-full pl-13 sm:pl-16 pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
+                        className={`w-full pl-14 sm:pl-[4.5rem] pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
                           errors.name ? 'border-red-300 focus:border-red-500' : 'border-transparent focus:border-indigo-300'
                         } focus:outline-none transition-colors text-gray-800`}
-                        style={{ paddingLeft: '3.25rem' }}
                       />
                     </div>
                     {errors.name && (
@@ -631,10 +628,9 @@ Please find the payment screenshot attached.`;
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="Enter your email"
-                        className={`w-full pl-13 sm:pl-16 pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
+                        className={`w-full pl-14 sm:pl-[4.5rem] pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
                           errors.email ? 'border-red-300 focus:border-red-500' : 'border-transparent focus:border-indigo-300'
                         } focus:outline-none transition-colors text-gray-800`}
-                        style={{ paddingLeft: '3.25rem' }}
                       />
                     </div>
                     {errors.email && (
@@ -661,10 +657,9 @@ Please find the payment screenshot attached.`;
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="Enter 10-digit phone number"
-                        className={`w-full pl-13 sm:pl-16 pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
+                        className={`w-full pl-14 sm:pl-[4.5rem] pr-3 sm:pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl border-2 text-sm sm:text-base ${
                           errors.phone ? 'border-red-300 focus:border-red-500' : 'border-transparent focus:border-indigo-300'
                         } focus:outline-none transition-colors text-gray-800`}
-                        style={{ paddingLeft: '3.25rem' }}
                       />
                     </div>
                     {errors.phone && (
@@ -867,14 +862,6 @@ Please find the payment screenshot attached.`;
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-800 font-medium">{formatPrice(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">GST (18%)</span>
-                    <span className="text-gray-800 font-medium">{formatPrice(gst)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">Conv. Fee (2%)</span>
-                    <span className="text-gray-800 font-medium">{formatPrice(convenienceFee)}</span>
                   </div>
                 </div>
 
