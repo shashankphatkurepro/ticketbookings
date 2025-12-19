@@ -9,6 +9,12 @@ interface BookingItem {
   quantity: number;
 }
 
+interface GroupBooking {
+  nonAlcoholCount: number;
+  maleCount: number;
+  femaleCount: number;
+}
+
 interface PaymentInfo {
   merchantOrderId: string | null;
   transactionId: string | null;
@@ -17,6 +23,7 @@ interface PaymentInfo {
 
 interface BookingState {
   items: BookingItem[];
+  groupBooking: GroupBooking;
   customerInfo: {
     name: string;
     email: string;
@@ -38,6 +45,11 @@ interface BookingContextType {
   setPaymentComplete: (merchantOrderId: string, transactionId: string) => void;
   setPaymentFailed: () => void;
   resetPayment: () => void;
+  // Group booking functions
+  setGroupBooking: (groupBooking: GroupBooking) => void;
+  updateGroupCount: (type: 'nonAlcohol' | 'male' | 'female', count: number) => void;
+  getGroupBookingTotal: () => number;
+  getGroupBookingItems: () => { name: string; quantity: number; price: number; total: number }[];
 }
 
 const initialPaymentState: PaymentInfo = {
@@ -46,11 +58,38 @@ const initialPaymentState: PaymentInfo = {
   status: 'idle',
 };
 
+const initialGroupBooking: GroupBooking = {
+  nonAlcoholCount: 0,
+  maleCount: 0,
+  femaleCount: 0,
+};
+
+// Group pricing functions
+const getNonAlcoholPrice = (count: number) => {
+  if (count >= 20) return 1199;
+  if (count >= 10) return 1299;
+  if (count >= 5) return 1399;
+  return 1499;
+};
+
+const getMalePrice = (count: number) => {
+  if (count >= 10) return 2999;
+  if (count >= 5) return 3199;
+  return 3499;
+};
+
+const getFemalePrice = (count: number) => {
+  if (count >= 10) return 2199;
+  if (count >= 5) return 2399;
+  return 2499;
+};
+
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBooking] = useState<BookingState>({
     items: [],
+    groupBooking: initialGroupBooking,
     customerInfo: { name: '', email: '', phone: '' },
     payment: initialPaymentState,
   });
@@ -120,6 +159,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setBooking((prev) => ({
       ...prev,
       items: [],
+      groupBooking: initialGroupBooking,
       payment: initialPaymentState,
     }));
   };
@@ -178,6 +218,66 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  // Group booking functions
+  const setGroupBooking = (groupBooking: GroupBooking) => {
+    setBooking((prev) => ({ ...prev, groupBooking }));
+  };
+
+  const updateGroupCount = (type: 'nonAlcohol' | 'male' | 'female', count: number) => {
+    setBooking((prev) => ({
+      ...prev,
+      groupBooking: {
+        ...prev.groupBooking,
+        [type === 'nonAlcohol' ? 'nonAlcoholCount' : type === 'male' ? 'maleCount' : 'femaleCount']: count,
+      },
+    }));
+  };
+
+  const getGroupBookingTotal = () => {
+    const { nonAlcoholCount, maleCount, femaleCount } = booking.groupBooking;
+    const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
+    const maleTotal = maleCount * getMalePrice(maleCount);
+    const femaleTotal = femaleCount * getFemalePrice(femaleCount);
+    return nonAlcoholTotal + maleTotal + femaleTotal;
+  };
+
+  const getGroupBookingItems = () => {
+    const items: { name: string; quantity: number; price: number; total: number }[] = [];
+    const { nonAlcoholCount, maleCount, femaleCount } = booking.groupBooking;
+
+    if (nonAlcoholCount > 0) {
+      const price = getNonAlcoholPrice(nonAlcoholCount);
+      items.push({
+        name: 'Group - Without Alcohol',
+        quantity: nonAlcoholCount,
+        price,
+        total: nonAlcoholCount * price,
+      });
+    }
+
+    if (maleCount > 0) {
+      const price = getMalePrice(maleCount);
+      items.push({
+        name: 'Group - Male (with drinks)',
+        quantity: maleCount,
+        price,
+        total: maleCount * price,
+      });
+    }
+
+    if (femaleCount > 0) {
+      const price = getFemalePrice(femaleCount);
+      items.push({
+        name: 'Group - Female (with drinks)',
+        quantity: femaleCount,
+        price,
+        total: femaleCount * price,
+      });
+    }
+
+    return items;
+  };
+
   return (
     <BookingContext.Provider
       value={{
@@ -193,6 +293,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         setPaymentComplete,
         setPaymentFailed,
         resetPayment,
+        setGroupBooking,
+        updateGroupCount,
+        getGroupBookingTotal,
+        getGroupBookingItems,
       }}
     >
       {children}

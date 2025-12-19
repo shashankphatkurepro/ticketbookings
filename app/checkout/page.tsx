@@ -16,6 +16,7 @@ import {
   Plus,
   Trash2,
   User,
+  Users,
   Mail,
   Phone,
   Shield,
@@ -39,7 +40,7 @@ const WHATSAPP_NUMBER = '917977127312';
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { booking, removeFromCart, addToCart, updateQuantity, getTotalAmount, getTotalItems, setCustomerInfo, clearCart, setPaymentComplete } = useBooking();
+  const { booking, removeFromCart, addToCart, updateQuantity, getTotalAmount, getTotalItems, setCustomerInfo, clearCart, setPaymentComplete, getGroupBookingTotal, getGroupBookingItems } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
@@ -75,7 +76,10 @@ function CheckoutContent() {
 
   const totalItems = getTotalItems();
   const subtotal = getTotalAmount();
-  const totalAmount = subtotal;
+  const groupBookingTotal = getGroupBookingTotal();
+  const groupBookingItems = getGroupBookingItems();
+  const totalAmount = subtotal + groupBookingTotal;
+  const hasGroupBooking = groupBookingItems.length > 0;
 
   // Generate UPI QR code when reaching payment step
   useEffect(() => {
@@ -135,7 +139,7 @@ function CheckoutContent() {
   };
 
   const handleContinue = () => {
-    if (step === 1 && totalItems > 0) {
+    if (step === 1 && (totalItems > 0 || hasGroupBooking)) {
       setStep(2);
     } else if (step === 2) {
       if (validateForm()) {
@@ -167,6 +171,10 @@ function CheckoutContent() {
   };
 
   const openWhatsAppForScreenshot = () => {
+    const ticketsList = booking.items.map(item => `${item.ticketName} x${item.quantity}`);
+    const groupList = groupBookingItems.map(item => `${item.name} x${item.quantity}`);
+    const allItems = [...ticketsList, ...groupList].join(', ');
+
     const message = `Hi! I have completed payment for my booking.
 
 Booking ID: ${bookingId}
@@ -174,7 +182,7 @@ Name: ${formData.name}
 Email: ${formData.email}
 Phone: ${formData.phone}
 Amount: ${formatPrice(totalAmount)}
-Tickets: ${booking.items.map(item => `${item.ticketName} x${item.quantity}`).join(', ')}
+Tickets: ${allItems}
 
 Please find the payment screenshot attached.`;
 
@@ -240,6 +248,17 @@ Please find the payment screenshot attached.`;
                   </div>
                   <span className="font-semibold text-gray-800 text-sm sm:text-base flex-shrink-0">
                     {formatPrice(item.price * item.quantity)}
+                  </span>
+                </div>
+              ))}
+              {groupBookingItems.map((item, index) => (
+                <div key={`group-${index}`} className="flex justify-between items-center p-2.5 sm:p-3 glass-card rounded-lg sm:rounded-xl bg-emerald-50">
+                  <div className="min-w-0 flex-1 mr-2">
+                    <p className="font-medium text-gray-800 text-sm sm:text-base truncate">{item.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">x {item.quantity} @ {formatPrice(item.price)}/head</p>
+                  </div>
+                  <span className="font-semibold text-emerald-700 text-sm sm:text-base flex-shrink-0">
+                    {formatPrice(item.total)}
                   </span>
                 </div>
               ))}
@@ -327,7 +346,7 @@ Please find the payment screenshot attached.`;
   }
 
   // Empty Cart State - Show available tickets
-  if (totalItems === 0 && step === 1) {
+  if (totalItems === 0 && !hasGroupBooking && step === 1) {
     return (
       <div className="min-h-screen px-3 sm:px-4 py-6 sm:py-10">
         <div className="max-w-4xl mx-auto">
@@ -566,6 +585,35 @@ Please find the payment screenshot attached.`;
                     );
                   })}
                 </div>
+
+                {/* Group Booking Items */}
+                {groupBookingItems.length > 0 && (
+                  <div className="space-y-3 sm:space-y-4 mt-4 pt-4 border-t border-gray-200">
+                    <h4 className="text-sm font-semibold text-emerald-700 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Group Booking
+                    </h4>
+                    {groupBookingItems.map((item, index) => (
+                      <div
+                        key={`group-review-${index}`}
+                        className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 md:p-5 glass-card rounded-xl sm:rounded-2xl bg-emerald-50"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{item.name}</h3>
+                          <p className="text-base sm:text-lg font-bold text-gray-800 mt-2">
+                            {formatPrice(item.price)} <span className="text-xs sm:text-sm font-normal text-gray-500">/ person</span>
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 sm:gap-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">{item.quantity} people</span>
+                          </div>
+                          <span className="text-lg font-bold text-emerald-700">{formatPrice(item.total)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <Link
                   href="/#tickets"
@@ -855,14 +903,33 @@ Please find the payment screenshot attached.`;
                       </span>
                     </div>
                   ))}
+                  {groupBookingItems.map((item, index) => (
+                    <div key={`group-sidebar-${index}`} className="flex justify-between items-center p-2 sm:p-3 glass-card rounded-lg sm:rounded-xl bg-emerald-50">
+                      <div className="min-w-0 flex-1 mr-2">
+                        <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500">x {item.quantity} @ {formatPrice(item.price)}</p>
+                      </div>
+                      <span className="font-semibold text-emerald-700 text-xs sm:text-sm flex-shrink-0">
+                        {formatPrice(item.total)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Price Breakdown */}
                 <div className="space-y-1.5 sm:space-y-2 pt-3 sm:pt-4 border-t border-gray-200">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-800 font-medium">{formatPrice(subtotal)}</span>
-                  </div>
+                  {subtotal > 0 && (
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Tickets</span>
+                      <span className="text-gray-800 font-medium">{formatPrice(subtotal)}</span>
+                    </div>
+                  )}
+                  {groupBookingTotal > 0 && (
+                    <div className="flex justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Group Booking</span>
+                      <span className="text-emerald-700 font-medium">{formatPrice(groupBookingTotal)}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Total */}
@@ -879,7 +946,7 @@ Please find the payment screenshot attached.`;
                 {step < 3 ? (
                   <button
                     onClick={handleContinue}
-                    disabled={step === 1 && totalItems === 0}
+                    disabled={step === 1 && totalItems === 0 && !hasGroupBooking}
                     className="w-full py-3 sm:py-3.5 lg:py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg font-semibold shadow-lg shadow-pink-500/25 hover:shadow-pink-500/35 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   >
                     {step === 1 ? 'Continue' : 'Continue to Payment'}

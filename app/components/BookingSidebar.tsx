@@ -1,18 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { eventData } from '../data/eventData';
 import Link from 'next/link';
 import { Calendar, Clock, MapPin, Minus, Plus, Ticket, ShoppingBag, Sparkles, TrendingUp, Users } from 'lucide-react';
 
 export default function BookingSidebar() {
-  const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems } = useBooking();
+  const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems, updateGroupCount, getGroupBookingTotal } = useBooking();
 
-  // Group booking state
-  const [nonAlcoholCount, setNonAlcoholCount] = useState(0);
-  const [maleGroupCount, setMaleGroupCount] = useState(0);
-  const [femaleGroupCount, setFemaleGroupCount] = useState(0);
+  // Get group booking from context
+  const { nonAlcoholCount, maleCount: maleGroupCount, femaleCount: femaleGroupCount } = booking.groupBooking;
+
+  // Local setters that call context
+  const setNonAlcoholCount = (count: number) => updateGroupCount('nonAlcohol', count);
+  const setMaleGroupCount = (count: number) => updateGroupCount('male', count);
+  const setFemaleGroupCount = (count: number) => updateGroupCount('female', count);
 
   // Group pricing logic - Without Alcohol
   const getNonAlcoholPrice = (count: number) => {
@@ -38,7 +41,7 @@ export default function BookingSidebar() {
   const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
   const maleGroupTotal = maleGroupCount * getMalePrice(maleGroupCount);
   const femaleGroupTotal = femaleGroupCount * getFemalePrice(femaleGroupCount);
-  const groupBookingTotal = nonAlcoholTotal + maleGroupTotal + femaleGroupTotal;
+  const groupBookingTotal = getGroupBookingTotal();
 
   // Fixed availability numbers to avoid hydration mismatch
   const fakeAvailability = useMemo(() => {
