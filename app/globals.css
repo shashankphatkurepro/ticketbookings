@@ -249,17 +249,6 @@ body {
   position: sticky;
   top: 90px;
   height: fit-content;
-  max-height: calc(100vh - 110px);
-  overflow-y: auto;
-}
-
-.booking-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.booking-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
 }
 
 /* ========== COUNTDOWN ========== */

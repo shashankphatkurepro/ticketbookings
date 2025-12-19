@@ -9,10 +9,10 @@ import { Calendar, Clock, MapPin, Minus, Plus, Ticket, ShoppingBag, Sparkles, Tr
 export default function BookingSidebar() {
   const { booking, addToCart, removeFromCart, getTotalAmount, getTotalItems } = useBooking();
 
-  // Generate random availability numbers around 60 for each ticket
+  // Fixed availability numbers to avoid hydration mismatch
   const fakeAvailability = useMemo(() => {
-    return eventData.tickets.reduce((acc, ticket) => {
-      acc[ticket.id] = Math.floor(Math.random() * 30) + 45; // 45-74 range
+    return eventData.tickets.reduce((acc, ticket, index) => {
+      acc[ticket.id] = 45 + ((index * 7) % 30); // 45-74 range, deterministic
       return acc;
     }, {} as Record<string, number>);
   }, []);

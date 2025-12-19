@@ -8,16 +8,17 @@ export default function HeroSection() {
   const [currentImage, setCurrentImage] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
+  // Fixed particle positions to avoid hydration mismatch
   const particles = useMemo(
     () =>
       [...Array(20)].map((_, i) => ({
         id: i,
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        delay: `${Math.random() * 5}s`,
-        duration: `${4 + Math.random() * 4}s`,
-        size: Math.random() > 0.6 ? 'w-1 h-1' : 'w-1.5 h-1.5',
-        opacity: Math.random() > 0.5 ? 'opacity-40' : 'opacity-20',
+        left: `${(i * 17 + 5) % 100}%`,
+        top: `${(i * 23 + 10) % 100}%`,
+        delay: `${(i * 0.25) % 5}s`,
+        duration: `${4 + (i % 4)}s`,
+        size: i % 3 === 0 ? 'w-1 h-1' : 'w-1.5 h-1.5',
+        opacity: i % 2 === 0 ? 'opacity-40' : 'opacity-20',
       })),
     []
   );
