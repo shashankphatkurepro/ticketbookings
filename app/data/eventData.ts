@@ -81,9 +81,9 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
     },
     {
       id: "couple-food-drinks",
-      name: "Couple Food + Cool Drinks",
-      description: "Entry for 2 with unlimited food & cool drinks",
-      price: 6499,
+      name: "Couple Food + Drinks",
+      description: "Entry for 2 with unlimited food & drinks",
+      price: 5499,
       originalPrice: 7999,
       available: 100,
       maxPerOrder: 5,
