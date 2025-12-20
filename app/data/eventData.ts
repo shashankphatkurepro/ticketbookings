@@ -63,7 +63,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       id: "couple-food",
       name: "Couple with Food",
       description: "Entry for 2 with unlimited food",
-      price: 3499,
+      price: 2849,
       originalPrice: 4499,
       available: 150,
       maxPerOrder: 5,
