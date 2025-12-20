@@ -5,7 +5,6 @@ import { eventData } from '../data/eventData';
 import { Calendar, Clock, MapPin, Sparkles, ChevronDown, Users, Star, Ticket } from 'lucide-react';
 
 export default function HeroSection() {
-  const [currentImage, setCurrentImage] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // Fixed particle positions to avoid hydration mismatch
@@ -42,13 +41,6 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % eventData.images.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
   const countdownItems = [
     { value: timeLeft.days, label: 'Days' },
     { value: timeLeft.hours, label: 'Hours' },
@@ -58,23 +50,25 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* Background Images with Ken Burns effect */}
+      {/* Responsive Background Images */}
       <div className="absolute inset-0">
-        {eventData.images.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${
-              currentImage === index ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
-            }`}
-            style={{
-              backgroundImage: `url(${image})`,
-              animation: currentImage === index ? 'slowZoom 5s ease-out forwards' : 'none',
-            }}
-          />
-        ))}
+        {/* Mobile Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center md:hidden"
+          style={{
+            backgroundImage: `url(/bannermobile.png)`,
+          }}
+        />
+        {/* Desktop Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center hidden md:block"
+          style={{
+            backgroundImage: `url(/bannerdesktop.jpg)`,
+          }}
+        />
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/75 to-black/90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/30 via-transparent to-purple-900/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/20 via-transparent to-purple-900/20" />
       </div>
 
       {/* Floating Particles */}
@@ -151,8 +145,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+          {/* CTA Button */}
+          <div className="flex justify-center mb-12">
             <a
               href="#tickets"
               className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-2xl text-white font-semibold text-lg shadow-lg shadow-pink-500/30 hover:shadow-pink-500/40 transition-all hover:-translate-y-0.5"
@@ -160,13 +154,6 @@ export default function HeroSection() {
               <Ticket className="w-5 h-5" />
               Book Your Tickets
               <ChevronDown className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-            </a>
-            <a
-              href="#about"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 rounded-2xl text-white font-semibold text-lg transition-all"
-            >
-              <Sparkles className="w-5 h-5" />
-              Explore Event
             </a>
           </div>
 
@@ -198,20 +185,6 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Image Indicators */}
-      <div className="absolute bottom-8 right-8 flex gap-2">
-        {eventData.images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImage(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              currentImage === index ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'
-            }`}
-            aria-label={`View image ${index + 1}`}
-          />
-        ))}
       </div>
 
       {/* Decorative Elements */}
