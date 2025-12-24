@@ -19,23 +19,23 @@ export default function BookingSidebar() {
 
   // Group pricing logic - Without Alcohol
   const getNonAlcoholPrice = (count: number) => {
-    if (count >= 20) return 1199;
-    if (count >= 10) return 1299;
-    if (count >= 5) return 1399;
-    return 1499; // 1-4 people
+    if (count >= 20) return 999;
+    if (count >= 10) return 1099;
+    if (count >= 5) return 1199;
+    return 1299; // 1-4 people
   };
 
   // Group pricing logic - With Alcohol
   const getMalePrice = (count: number) => {
-    if (count >= 10) return 2999;
-    if (count >= 5) return 3199;
-    return 3499; // 1-4 people
+    if (count >= 10) return 2799;
+    if (count >= 5) return 2999;
+    return 3299; // 1-4 people
   };
 
   const getFemalePrice = (count: number) => {
-    if (count >= 10) return 2199;
-    if (count >= 5) return 2399;
-    return 2499; // 1-4 people
+    if (count >= 10) return 2099;
+    if (count >= 5) return 2199;
+    return 2299; // 1-4 people
   };
 
   const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
