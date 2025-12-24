@@ -265,19 +265,19 @@ export default function BookingSidebar() {
               <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-4 gap-1">
                 <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 1 && nonAlcoholCount <= 4 ? 'bg-amber-100' : 'bg-gray-50'}`}>
                   <p className="text-[9px] text-gray-400">1-4</p>
-                  <p className="text-[10px] text-gray-700 font-bold">₹1,499</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,299</p>
                 </div>
                 <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 5 && nonAlcoholCount <= 9 ? 'bg-amber-100' : 'bg-gray-50'}`}>
                   <p className="text-[9px] text-gray-400">5-9</p>
-                  <p className="text-[10px] text-gray-700 font-bold">₹1,399</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,199</p>
                 </div>
                 <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 10 && nonAlcoholCount <= 19 ? 'bg-amber-100' : 'bg-gray-50'}`}>
                   <p className="text-[9px] text-gray-400">10-19</p>
-                  <p className="text-[10px] text-gray-700 font-bold">₹1,299</p>
+                  <p className="text-[10px] text-gray-700 font-bold">₹1,099</p>
                 </div>
                 <div className={`rounded p-1.5 text-center ${nonAlcoholCount >= 20 ? 'bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-200' : 'bg-gray-50'}`}>
                   <p className="text-[9px] text-emerald-600">20-30</p>
-                  <p className="text-[10px] text-emerald-700 font-bold">₹1,199</p>
+                  <p className="text-[10px] text-emerald-700 font-bold">₹999</p>
                 </div>
               </div>
             </div>
@@ -400,18 +400,18 @@ export default function BookingSidebar() {
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div className="bg-gray-50 rounded-lg p-2 text-center">
                 <p className="text-[9px] text-gray-400">1-4</p>
-                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹3,499</span></p>
-                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,499</span></p>
+                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹3,299</span></p>
+                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,299</span></p>
               </div>
               <div className="bg-gray-50 rounded-lg p-2 text-center">
                 <p className="text-[9px] text-gray-400">5-9</p>
-                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹3,199</span></p>
-                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,399</span></p>
+                <p className="text-[10px] text-gray-700">M: <span className="font-bold">₹2,999</span></p>
+                <p className="text-[10px] text-gray-700">F: <span className="font-bold">₹2,199</span></p>
               </div>
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-2 text-center border border-emerald-200">
                 <p className="text-[9px] text-emerald-600">10-20</p>
-                <p className="text-[10px] text-emerald-700">M: <span className="font-bold">₹2,999</span></p>
-                <p className="text-[10px] text-emerald-700">F: <span className="font-bold">₹2,199</span></p>
+                <p className="text-[10px] text-emerald-700">M: <span className="font-bold">₹2,799</span></p>
+                <p className="text-[10px] text-emerald-700">F: <span className="font-bold">₹2,099</span></p>
               </div>
             </div>
 
