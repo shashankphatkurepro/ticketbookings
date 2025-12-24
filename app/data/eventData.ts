@@ -117,16 +117,16 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
   ],
 
   coolDrinks: [
-    { name: "Coca-Cola", type: "Soft Drink" },
-    { name: "Pepsi", type: "Soft Drink" },
-    { name: "Sprite", type: "Soft Drink" },
-    { name: "Fanta", type: "Soft Drink" },
-    { name: "Limca", type: "Soft Drink" },
-    { name: "Thumbs Up", type: "Soft Drink" },
-    { name: "Fresh Lime Soda", type: "Mocktail" },
-    { name: "Virgin Mojito", type: "Mocktail" },
-    { name: "Mango Lassi", type: "Beverage" },
-    { name: "Fresh Juices", type: "Juice" },
+    { name: "Teachers", type: "Scotch" },
+    { name: "Black & White", type: "Scotch" },
+    { name: "Blenders Pride", type: "Whisky" },
+    { name: "Sula Wine", type: "Wine" },
+    { name: "Old Monk", type: "Rum" },
+    { name: "Bacardi Carta Blanca", type: "Rum" },
+    { name: "Budweiser", type: "Beer" },
+    { name: "Sula Satori", type: "Wine" },
+    { name: "Smirnoff", type: "Vodka" },
+    { name: "Romanov", type: "Vodka" },
   ],
 
   foodMenu: {
