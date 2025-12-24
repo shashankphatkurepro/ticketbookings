@@ -43,7 +43,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       id: "kids-10-15",
       name: "Kids 10 to 15",
       description: "Entry for kids aged 10-15 years",
-      price: 1099,
+      price: 999,
       originalPrice: 1999,
       available: 100,
       maxPerOrder: 10,
