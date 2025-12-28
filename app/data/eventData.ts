@@ -36,7 +36,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 649,
       originalPrice: 999,
       available: 100,
-      maxPerOrder: 10,
+      maxPerOrder: 30,
       popular: false,
     },
     {
@@ -46,7 +46,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 999,
       originalPrice: 1999,
       available: 100,
-      maxPerOrder: 10,
+      maxPerOrder: 30,
       popular: false,
     },
     {
@@ -56,7 +56,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 1299,
       originalPrice: 2499,
       available: 200,
-      maxPerOrder: 5,
+      maxPerOrder: 30,
       popular: false,
     },
     {
@@ -66,7 +66,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 2499,
       originalPrice: 4499,
       available: 150,
-      maxPerOrder: 5,
+      maxPerOrder: 30,
       popular: true,
     },
     {
@@ -76,7 +76,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 3299,
       originalPrice: 4499,
       available: 150,
-      maxPerOrder: 5,
+      maxPerOrder: 30,
       popular: false,
     },
     {
@@ -86,7 +86,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       price: 5299,
       originalPrice: 7999,
       available: 100,
-      maxPerOrder: 5,
+      maxPerOrder: 30,
       popular: false,
     },
   ],
