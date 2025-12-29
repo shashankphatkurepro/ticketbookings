@@ -33,9 +33,9 @@ export default function BookingSidebar() {
   };
 
   const getFemalePrice = (count: number) => {
-    if (count >= 10) return 1999;
-    if (count >= 5) return 2099;
-    return 2399; // 1-4 people
+    if (count >= 10) return 2799;
+    if (count >= 5) return 2899;
+    return 2999; // 1-4 people
   };
 
   const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
