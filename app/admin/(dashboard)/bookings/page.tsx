@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Eye, Plus } from 'lucide-react';
 
 interface Booking {
   id: string;
@@ -86,6 +86,13 @@ export default function BookingsPage() {
           <h1 className="text-2xl font-bold text-white">Bookings</h1>
           <p className="text-gray-400 mt-1">{total} total bookings</p>
         </div>
+        <Link
+          href="/admin/bookings/new"
+          className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Create Booking
+        </Link>
       </div>
 
       {/* Filters */}

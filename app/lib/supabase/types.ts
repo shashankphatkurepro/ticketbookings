@@ -9,6 +9,9 @@ export interface Booking {
   subtotal: number;
   group_total: number;
   total_amount: number;
+  discount_amount: number;
+  discount_percentage: number;
+  discount_note: string | null;
   payment_status: 'pending' | 'confirmed' | 'failed' | 'refunded';
   payment_reference: string | null;
   payment_confirmed_at: string | null;
@@ -65,7 +68,12 @@ export interface CreateBookingInput {
   subtotal: number;
   group_total: number;
   total_amount: number;
+  discount_amount?: number;
+  discount_percentage?: number;
+  discount_note?: string;
   source?: string;
+  payment_status?: 'pending' | 'confirmed' | 'failed' | 'refunded';
+  notes?: string;
 }
 
 export interface BookingWithTickets extends Booking {

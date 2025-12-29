@@ -292,6 +292,35 @@ export default function BookingDetailsPage({ params }: { params: Promise<{ id: s
                 </>
               )}
 
+              {/* Subtotal */}
+              {(booking.discount_amount > 0 || booking.subtotal > booking.total_amount) && (
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <p className="text-gray-300">Subtotal</p>
+                  <p className="text-white">
+                    ₹{(booking.subtotal || (booking.total_amount + (booking.discount_amount || 0))).toLocaleString()}
+                  </p>
+                </div>
+              )}
+
+              {/* Discount */}
+              {booking.discount_amount > 0 && (
+                <div className="flex items-center justify-between p-3 bg-green-900/20 border border-green-800 rounded-lg">
+                  <div>
+                    <p className="text-green-300 font-medium">Discount Applied</p>
+                    {booking.discount_note && (
+                      <p className="text-sm text-gray-400">{booking.discount_note}</p>
+                    )}
+                    {booking.discount_percentage > 0 && (
+                      <p className="text-xs text-gray-500">{booking.discount_percentage.toFixed(1)}% off</p>
+                    )}
+                  </div>
+                  <p className="text-green-400 font-medium">
+                    -₹{booking.discount_amount.toLocaleString()}
+                  </p>
+                </div>
+              )}
+
+              {/* Total */}
               <div className="flex items-center justify-between p-3 bg-purple-900/20 border border-purple-800 rounded-lg">
                 <p className="text-purple-300 font-semibold">Total Amount</p>
                 <p className="text-white font-bold text-lg">

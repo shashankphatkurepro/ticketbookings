@@ -57,7 +57,11 @@ export async function POST(request: NextRequest) {
         subtotal: body.subtotal || 0,
         group_total: body.group_total || 0,
         total_amount: body.total_amount,
-        payment_status: 'pending',
+        discount_amount: body.discount_amount || 0,
+        discount_percentage: body.discount_percentage || 0,
+        discount_note: body.discount_note || null,
+        payment_status: body.payment_status || 'pending',
+        notes: body.notes || null,
         source: body.source || 'website',
       })
       .select()
