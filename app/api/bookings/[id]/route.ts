@@ -55,6 +55,53 @@ export async function GET(
   }
 }
 
+// DELETE - Delete booking and associated tickets
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = createAdminClient();
+
+    // First delete associated tickets
+    const { error: ticketsError } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('booking_id', id);
+
+    if (ticketsError) {
+      console.error('Error deleting tickets:', ticketsError);
+      return NextResponse.json(
+        { error: 'Failed to delete associated tickets' },
+        { status: 500 }
+      );
+    }
+
+    // Then delete the booking
+    const { error: bookingError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', id);
+
+    if (bookingError) {
+      console.error('Error deleting booking:', bookingError);
+      return NextResponse.json(
+        { error: 'Failed to delete booking' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error in DELETE /api/bookings/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 // PATCH - Update booking (confirm payment, refund, add notes)
 export async function PATCH(
   request: NextRequest,
