@@ -30,7 +30,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
     // First check our database
     const { data: booking, error: findError } = await supabase
       .from('bookings')
-      .select('id, booking_id, payment_status, instamojo_payment_id')
+      .select('id, booking_id, payment_status, instamojo_payment_id, customer_email')
       .eq('instamojo_payment_request_id', body.payment_request_id)
       .single();
 
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
         success: true,
         status: 'confirmed',
         bookingId: booking.booking_id,
+        bookingUuid: booking.id,
       });
     }
 
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
             success: true,
             status: 'confirmed',
             bookingId: booking.booking_id,
+            bookingUuid: booking.id,
           });
         }
       } catch (apiError) {
@@ -116,6 +118,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
       success: status === 'confirmed',
       status: status as 'confirmed' | 'pending' | 'failed',
       bookingId: booking.booking_id,
+      bookingUuid: booking.id,
     });
   } catch (error) {
     console.error('Error in POST /api/payments/verify:', error);

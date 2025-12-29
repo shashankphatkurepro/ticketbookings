@@ -47,6 +47,7 @@ function CheckoutContent() {
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [isInstamojoLoaded, setIsInstamojoLoaded] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [generatedTickets, setGeneratedTickets] = useState<Array<{ ticket_id: string; ticket_type: string }>>([]);
   const [formData, setFormData] = useState({
     name: booking.customerInfo.name,
     email: booking.customerInfo.email,
@@ -67,6 +68,21 @@ function CheckoutContent() {
     }
   }, [searchParams]);
 
+  const fetchTickets = async (bId: string) => {
+    try {
+      // Wait a moment for tickets to be generated
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const response = await fetch(`/api/bookings/${bId}`);
+      const data = await response.json();
+      if (data.tickets && data.tickets.length > 0) {
+        setGeneratedTickets(data.tickets);
+      }
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+    }
+  };
+
   const verifyPayment = async (paymentReqId: string, paymentId: string) => {
     try {
       const response = await fetch('/api/payments/verify', {
@@ -83,6 +99,10 @@ function CheckoutContent() {
         setBookingId(data.bookingId);
         setPaymentComplete(data.bookingId, paymentId);
         setIsComplete(true);
+        // Fetch tickets for download using UUID
+        if (data.bookingUuid) {
+          fetchTickets(data.bookingUuid);
+        }
       }
     } catch (error) {
       console.error('Payment verification failed:', error);
@@ -124,6 +144,10 @@ function CheckoutContent() {
         setBookingId(data.bookingId);
         setPaymentComplete(data.bookingId, response.paymentId || '');
         setIsComplete(true);
+        // Fetch tickets for download using UUID
+        if (data.bookingUuid) {
+          fetchTickets(data.bookingUuid);
+        }
       } else {
         setPaymentError('Payment verification failed. Please contact support.');
       }
@@ -350,13 +374,62 @@ Please find the payment screenshot attached.`;
             </div>
           </div>
 
+          {/* Download Tickets */}
+          {generatedTickets.length > 0 && (
+            <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 bg-gradient-to-br from-purple-50 to-indigo-50">
+              <h3 className="font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                Download Your Tickets
+              </h3>
+              <div className="space-y-2 sm:space-y-3">
+                {generatedTickets.map((ticket, index) => (
+                  <a
+                    key={ticket.ticket_id}
+                    href={`/api/tickets/${ticket.ticket_id}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-white rounded-xl border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <Ticket className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800 text-sm sm:text-base">
+                          Ticket #{index + 1}
+                        </p>
+                        <p className="text-xs text-gray-500">{ticket.ticket_type}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-purple-600 group-hover:text-purple-700">
+                      <span className="text-xs sm:text-sm font-medium">Download PDF</span>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Loading tickets */}
+          {generatedTickets.length === 0 && (
+            <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 bg-gradient-to-br from-purple-50 to-indigo-50">
+              <div className="flex items-center gap-3">
+                <LoaderSpinner className="w-5 h-5 text-purple-600 animate-spin" />
+                <p className="text-sm text-gray-600">Preparing your tickets for download...</p>
+              </div>
+            </div>
+          )}
+
           {/* Tickets Sent Confirmation */}
           <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 bg-gradient-to-br from-green-50 to-emerald-50">
             <div className="text-center">
               <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
                 <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">Tickets Sent!</h3>
+              <h3 className="font-semibold text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">Tickets Also Sent!</h3>
               <p className="text-xs sm:text-sm text-gray-600">
                 Your tickets have been sent to <strong>{formData.email}</strong>.
                 You will also receive them on WhatsApp shortly.

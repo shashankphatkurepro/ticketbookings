@@ -33,7 +33,7 @@ Don't miss this once-in-a-year opportunity to celebrate in style at one of Mahar
       id: "kids-5-10",
       name: "Kids 5–10 Years Pass",
       description: "Entry for kids aged 5-10 years",
-      price: 749,
+      price: 5,
       originalPrice: 999,
       available: 100,
       maxPerOrder: 30,
