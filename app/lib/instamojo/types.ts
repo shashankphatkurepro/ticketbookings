@@ -163,5 +163,6 @@ export interface VerifyPaymentResponse {
   success: boolean;
   status: 'confirmed' | 'pending' | 'failed';
   bookingId?: string;
+  bookingUuid?: string;
   error?: string;
 }
