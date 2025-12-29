@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 as LoaderSpinner } from 'lucide-react';
 import Link from 'next/link';
 import { useBooking } from '../context/BookingContext';
 import { eventData } from '../data/eventData';
-import QRCode from 'qrcode';
+import { InstamojoCheckout, openInstamojoCheckout, InstamojoResponse } from '../components/InstamojoCheckout';
 import {
   ArrowLeft,
   Calendar,
@@ -28,13 +28,10 @@ import {
   PartyPopper,
   Copy,
   Check,
-  Smartphone,
-  MessageCircle,
+  CreditCard,
+  Wallet,
 } from 'lucide-react';
 
-// UPI Payment Configuration
-const UPI_ID = 'paytmqr281005050101czmpb9rxhwvh@paytm';
-const MERCHANT_NAME = 'Mangozzz Resort';
 const WHATSAPP_NUMBER = '917977127312';
 
 function CheckoutContent() {
@@ -44,10 +41,12 @@ function CheckoutContent() {
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [bookingId, setBookingId] = useState(() => `MNG${Date.now().toString(36).toUpperCase()}`);
+  const [bookingId, setBookingId] = useState('');
   const [copied, setCopied] = useState(false);
-  const [upiCopied, setUpiCopied] = useState(false);
-  const [upiQrCode, setUpiQrCode] = useState<string>('');
+  const [paymentRequestId, setPaymentRequestId] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [isInstamojoLoaded, setIsInstamojoLoaded] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: booking.customerInfo.name,
     email: booking.customerInfo.email,
@@ -55,16 +54,40 @@ function CheckoutContent() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Handle successful payment redirect
+  // Handle successful payment redirect from Instamojo
   useEffect(() => {
-    const success = searchParams.get('success');
-    const orderId = searchParams.get('orderId');
+    const paymentStatus = searchParams.get('payment_status');
+    const bookingIdParam = searchParams.get('booking_id');
+    const paymentId = searchParams.get('payment_id');
+    const paymentReqId = searchParams.get('payment_request_id');
 
-    if (success === 'true' && orderId) {
-      setBookingId(orderId);
-      setIsComplete(true);
+    if (paymentStatus === 'success' && bookingIdParam) {
+      // Verify payment with backend
+      verifyPayment(paymentReqId || '', paymentId || '');
     }
   }, [searchParams]);
+
+  const verifyPayment = async (paymentReqId: string, paymentId: string) => {
+    try {
+      const response = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_request_id: paymentReqId,
+          payment_id: paymentId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.status === 'confirmed') {
+        setBookingId(data.bookingId);
+        setPaymentComplete(data.bookingId, paymentId);
+        setIsComplete(true);
+      }
+    } catch (error) {
+      console.error('Payment verification failed:', error);
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -81,33 +104,53 @@ function CheckoutContent() {
   const totalAmount = subtotal + groupBookingTotal;
   const hasGroupBooking = groupBookingItems.length > 0;
 
-  // Generate UPI QR code when reaching payment step
-  useEffect(() => {
-    if (step === 3 && totalAmount > 0) {
-      generateUpiQrCode();
-    }
-  }, [step, totalAmount]);
+  // Instamojo payment handlers
+  const handlePaymentSuccess = useCallback(async (response: InstamojoResponse) => {
+    console.log('Payment success callback:', response);
+    setIsProcessing(true);
 
-  const generateUpiQrCode = async () => {
-    // UPI deep link format
-    const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent(`Booking: ${bookingId}`)}`;
     try {
-      const qrDataUrl = await QRCode.toDataURL(upiUrl, {
-        width: 280,
-        margin: 2,
-        color: { dark: '#1f2937', light: '#ffffff' }
+      const verifyResponse = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_request_id: paymentRequestId,
+          payment_id: response.paymentId,
+        }),
       });
-      setUpiQrCode(qrDataUrl);
-    } catch (e) {
-      console.log('UPI QR generation failed:', e);
-    }
-  };
 
-  const copyUpiId = () => {
-    navigator.clipboard.writeText(UPI_ID);
-    setUpiCopied(true);
-    setTimeout(() => setUpiCopied(false), 2000);
-  };
+      const data = await verifyResponse.json();
+      if (data.success && data.status === 'confirmed') {
+        setBookingId(data.bookingId);
+        setPaymentComplete(data.bookingId, response.paymentId || '');
+        setIsComplete(true);
+      } else {
+        setPaymentError('Payment verification failed. Please contact support.');
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      setPaymentError('Payment verification failed. Please contact support.');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [paymentRequestId, setPaymentComplete]);
+
+  const handlePaymentFailure = useCallback((response: InstamojoResponse) => {
+    console.log('Payment failed:', response);
+    setPaymentError('Payment failed. Please try again.');
+    setIsProcessing(false);
+  }, []);
+
+  const handlePaymentClose = useCallback(() => {
+    console.log('Payment modal closed');
+    if (!isComplete) {
+      setIsProcessing(false);
+    }
+  }, [isComplete]);
+
+  const handleInstamojoLoad = useCallback(() => {
+    setIsInstamojoLoaded(true);
+  }, []);
 
   const copyBookingId = () => {
     navigator.clipboard.writeText(bookingId);
@@ -149,53 +192,49 @@ function CheckoutContent() {
     }
   };
 
-  const handlePaymentConfirmation = async () => {
+  const handleInitiatePayment = async () => {
     setIsProcessing(true);
+    setPaymentError(null);
 
     try {
-      // Save booking to Supabase database
-      const bookingData = {
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        items: booking.items,
-        group_booking: hasGroupBooking ? booking.groupBooking : null,
-        subtotal: subtotal,
-        group_total: groupBookingTotal,
-        total_amount: totalAmount,
-        source: 'website',
-      };
-
-      const response = await fetch('/api/bookings', {
+      // Create payment request via API
+      const response = await fetch('/api/payments/create-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingData),
+        body: JSON.stringify({
+          customer_name: formData.name,
+          customer_email: formData.email,
+          customer_phone: formData.phone,
+          items: booking.items,
+          group_booking: hasGroupBooking ? booking.groupBooking : null,
+          subtotal: subtotal,
+          group_total: groupBookingTotal,
+          total_amount: totalAmount,
+        }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        // Update booking ID with the one from database
+      const data = await response.json();
+
+      if (data.success && data.paymentUrl) {
         setBookingId(data.bookingId);
+        setPaymentRequestId(data.paymentRequestId);
+        setPaymentUrl(data.paymentUrl);
+
+        // Open Instamojo seamless checkout modal
+        const opened = openInstamojoCheckout(data.paymentUrl);
+        if (!opened) {
+          // Fallback: redirect to payment URL if modal fails
+          window.location.href = data.paymentUrl;
+        }
       } else {
-        console.error('Failed to save booking to database');
+        setPaymentError(data.error || 'Failed to create payment request');
+        setIsProcessing(false);
       }
     } catch (error) {
-      console.error('Error saving booking:', error);
+      console.error('Payment initiation error:', error);
+      setPaymentError('Failed to initiate payment. Please try again.');
+      setIsProcessing(false);
     }
-
-    // Mark payment as complete in context
-    setPaymentComplete(bookingId, `UPI-${Date.now()}`);
-
-    setIsProcessing(false);
-    setIsComplete(true);
-
-    // Open WhatsApp to send payment screenshot
-    openWhatsAppForScreenshot();
-  };
-
-  const openUpiApp = () => {
-    const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent(`Booking: ${bookingId}`)}`;
-    window.location.href = upiUrl;
   };
 
   const openWhatsAppForScreenshot = () => {
@@ -231,18 +270,26 @@ Please find the payment screenshot attached.`;
     return (
       <div className="min-h-screen px-3 sm:px-4 py-6 sm:py-8 md:py-10">
         <div className="max-w-lg mx-auto">
+          {/* Instamojo Checkout Script */}
+          <InstamojoCheckout
+            onSuccess={handlePaymentSuccess}
+            onFailure={handlePaymentFailure}
+            onClose={handlePaymentClose}
+            onLoad={handleInstamojoLoad}
+          />
+
           {/* Success Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="relative inline-block mb-4 sm:mb-6">
               <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-2xl shadow-green-500/30 mx-auto" style={{ width: '4.5rem', height: '4.5rem' }}>
-                <MessageCircle className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
+                <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
               <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg animate-bounce">
                 <PartyPopper className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">Almost Done!</h1>
-            <p className="text-sm sm:text-base text-gray-500">Send your payment screenshot to complete booking</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">Payment Successful!</h1>
+            <p className="text-sm sm:text-base text-gray-500">Your tickets have been generated</p>
           </div>
 
           {/* Booking Summary Card */}
@@ -303,43 +350,38 @@ Please find the payment screenshot attached.`;
             </div>
           </div>
 
-          {/* WhatsApp CTA */}
+          {/* Tickets Sent Confirmation */}
           <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6 bg-gradient-to-br from-green-50 to-emerald-50">
-            <div className="text-center mb-3 sm:mb-4">
-              <h3 className="font-semibold text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">Send Payment Screenshot</h3>
+            <div className="text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
+                <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">Tickets Sent!</h3>
               <p className="text-xs sm:text-sm text-gray-600">
-                Click the button below to open WhatsApp and send your payment screenshot.
-                Your tickets will be sent to you after verification.
+                Your tickets have been sent to <strong>{formData.email}</strong>.
+                You will also receive them on WhatsApp shortly.
               </p>
             </div>
-
-            <button
-              onClick={openWhatsAppForScreenshot}
-              className="w-full flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg shadow-lg shadow-green-500/25 hover:shadow-green-500/35 transition-all hover:-translate-y-0.5"
-            >
-              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-              Open WhatsApp
-            </button>
           </div>
 
-          {/* Steps Info */}
+          {/* What&apos;s Next */}
           <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 mb-4 sm:mb-6">
             <h3 className="font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-              Next Steps
+              What&apos;s Next
             </h3>
             <ol className="space-y-2.5 sm:space-y-3">
               <li className="flex items-start gap-2 sm:gap-3">
                 <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">1</span>
-                <p className="text-xs sm:text-sm text-gray-600">Open WhatsApp and send your payment screenshot</p>
+                <p className="text-xs sm:text-sm text-gray-600">Check your email for the tickets</p>
               </li>
               <li className="flex items-start gap-2 sm:gap-3">
                 <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">2</span>
-                <p className="text-xs sm:text-sm text-gray-600">We will verify your payment</p>
+                <p className="text-xs sm:text-sm text-gray-600">Show your QR code at the venue entrance</p>
               </li>
               <li className="flex items-start gap-2 sm:gap-3">
                 <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">3</span>
-                <p className="text-xs sm:text-sm text-gray-600">Your tickets will be sent to you on WhatsApp</p>
+                <p className="text-xs sm:text-sm text-gray-600">Have an amazing New Year&apos;s Eve!</p>
               </li>
             </ol>
           </div>
@@ -356,14 +398,13 @@ Please find the payment screenshot attached.`;
           </button>
 
           {/* Footer Note */}
-          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-amber-50 rounded-xl sm:rounded-2xl border border-amber-200">
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-indigo-50 rounded-xl sm:rounded-2xl border border-indigo-200">
             <div className="flex items-start gap-2 sm:gap-3">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-amber-800 mb-0.5 sm:mb-1 text-sm sm:text-base">Important</p>
-                <p className="text-xs sm:text-sm text-amber-700">
-                  Please send your payment screenshot on WhatsApp for verification.
-                  Tickets will be sent after payment confirmation.
+                <p className="font-medium text-indigo-800 mb-0.5 sm:mb-1 text-sm sm:text-base">Need Help?</p>
+                <p className="text-xs sm:text-sm text-indigo-700">
+                  Contact us on WhatsApp at +91 79771 27312 for any queries.
                 </p>
               </div>
             </div>
@@ -485,6 +526,14 @@ Please find the payment screenshot attached.`;
 
   return (
     <div className="min-h-screen py-4 px-3 sm:py-6 sm:px-4 md:py-8 lg:px-6">
+      {/* Instamojo Checkout Script */}
+      <InstamojoCheckout
+        onSuccess={handlePaymentSuccess}
+        onFailure={handlePaymentFailure}
+        onClose={handlePaymentClose}
+        onLoad={handleInstamojoLoad}
+      />
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
@@ -754,11 +803,11 @@ Please find the payment screenshot attached.`;
               <div className="glass-strong rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                    <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-800">Pay via UPI</h2>
-                    <p className="text-xs sm:text-sm text-gray-500">Scan QR or use UPI ID</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-800">Secure Payment</h2>
+                    <p className="text-xs sm:text-sm text-gray-500">Pay via UPI, Cards, Net Banking or Wallets</p>
                   </div>
                 </div>
 
@@ -781,100 +830,71 @@ Please find the payment screenshot attached.`;
                   </div>
                 </div>
 
-                {/* UPI Payment Section */}
-                <div className="p-4 sm:p-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl sm:rounded-2xl mb-4 sm:mb-6">
+                {/* Payment Section */}
+                <div className="p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl mb-4 sm:mb-6">
                   {/* Amount to Pay */}
                   <div className="text-center mb-4 sm:mb-6">
                     <p className="text-xs sm:text-sm text-gray-600 mb-1">Amount to Pay</p>
                     <p className="text-2xl sm:text-3xl font-bold text-gray-800">{formatPrice(totalAmount)}</p>
                   </div>
 
-                  {/* QR Code */}
-                  <div className="flex justify-center mb-4 sm:mb-6">
-                    <div className="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg">
-                      {upiQrCode ? (
-                        <img src={upiQrCode} alt="UPI QR Code" className="w-44 h-44 sm:w-56 sm:h-56" />
-                      ) : (
-                        <div className="w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center bg-gray-100 rounded-lg sm:rounded-xl">
-                          <LoaderSpinner className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 animate-spin" />
-                        </div>
-                      )}
+                  {/* Payment Methods */}
+                  <div className="flex justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                      <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                      <span className="text-xs sm:text-sm text-gray-700">Cards</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                      <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <span className="text-xs sm:text-sm text-gray-700">UPI</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm">
+                      <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <span className="text-xs sm:text-sm text-gray-700">Net Banking</span>
                     </div>
                   </div>
 
-                  <p className="text-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                    Scan this QR code with any UPI app
+                  <p className="text-center text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+                    Choose your preferred payment method on the next screen
                   </p>
 
-                  {/* UPI Apps Icons */}
-                  <div className="flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                    {/* Google Pay */}
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
-                      <img src="https://www.upi.me/_next/image?url=%2Flogos%2Fgpay.png&w=96&q=75" alt="Google Pay" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+                  {/* Error Message */}
+                  {paymentError && (
+                    <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0" />
+                        <p className="text-xs sm:text-sm text-red-700">{paymentError}</p>
+                      </div>
                     </div>
-                    {/* PhonePe */}
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
-                      <img src="https://www.upi.me/_next/image?url=%2Flogos%2Fphonepe.png&w=96&q=75" alt="PhonePe" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                    </div>
-                    {/* Paytm */}
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
-                      <img src="https://www.upi.me/_next/image?url=%2Flogos%2Fpaytm.png&w=96&q=75" alt="Paytm" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                    </div>
-                    {/* BHIM */}
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
-                      <img src="https://www.upi.me/_next/image?url=%2Flogos%2Fbhim.png&w=96&q=75" alt="BHIM" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                    </div>
-                  </div>
+                  )}
 
-                  {/* Divider */}
-                  <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <span className="text-xs sm:text-sm text-gray-500">OR</span>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                  </div>
-
-                  {/* UPI ID */}
-                  <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
-                    <p className="text-[10px] sm:text-xs text-gray-500 mb-1.5 sm:mb-2 text-center">Pay to UPI ID</p>
-                    <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-md sm:rounded-lg p-2 sm:p-3">
-                      <code className="text-[10px] sm:text-sm font-mono text-gray-800 truncate flex-1">{UPI_ID}</code>
-                      <button
-                        onClick={copyUpiId}
-                        className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-colors flex-shrink-0"
-                      >
-                        {upiCopied ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : <Copy className="w-3 h-3 sm:w-4 sm:h-4" />}
-                        <span className="hidden xs:inline">{upiCopied ? 'Copied!' : 'Copy'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Open UPI App Button (Mobile) */}
+                  {/* Pay Button */}
                   <button
-                    onClick={openUpiApp}
-                    className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg sm:rounded-xl font-semibold flex items-center justify-center gap-2 transition-all mb-3 sm:mb-4 text-sm sm:text-base"
+                    onClick={handleInitiatePayment}
+                    disabled={isProcessing || !isInstamojoLoaded}
+                    className="w-full py-3 sm:py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl sm:rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-70 text-sm sm:text-base shadow-lg shadow-indigo-500/25"
                   >
-                    <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Open UPI App to Pay
+                    {isProcessing ? (
+                      <>
+                        <LoaderSpinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : !isInstamojoLoaded ? (
+                      <>
+                        <LoaderSpinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span>Pay {formatPrice(totalAmount)}</span>
+                      </>
+                    )}
                   </button>
 
-                  <p className="text-[10px] sm:text-xs text-gray-500 text-center">
-                    After payment, click the button below to confirm
+                  <p className="text-[10px] sm:text-xs text-gray-500 text-center mt-3">
+                    You will be redirected to a secure payment page
                   </p>
-                </div>
-
-                {/* Instructions */}
-                <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl mb-4 sm:mb-6">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-blue-800 mb-1 text-sm sm:text-base">How to Pay</p>
-                      <ol className="text-xs sm:text-sm text-blue-700 space-y-0.5 sm:space-y-1 list-decimal list-inside">
-                        <li>Scan the QR code or copy the UPI ID</li>
-                        <li>Pay {formatPrice(totalAmount)} using any UPI app</li>
-                        <li>After successful payment, click &quot;I Have Paid&quot;</li>
-                      </ol>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Security Badge */}
@@ -883,8 +903,8 @@ Please find the payment screenshot attached.`;
                     <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-green-800 text-sm sm:text-base">Secure UPI Payment</p>
-                    <p className="text-xs sm:text-sm text-green-600">Direct bank transfer via UPI - no card details needed</p>
+                    <p className="font-medium text-green-800 text-sm sm:text-base">100% Secure Payment</p>
+                    <p className="text-xs sm:text-sm text-green-600">Powered by Instamojo - India&apos;s trusted payment gateway</p>
                   </div>
                 </div>
               </div>
@@ -981,19 +1001,24 @@ Please find the payment screenshot attached.`;
                   </button>
                 ) : (
                   <button
-                    onClick={handlePaymentConfirmation}
-                    disabled={isProcessing}
-                    className="w-full py-3 sm:py-3.5 lg:py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg font-semibold shadow-lg shadow-green-500/25 flex items-center justify-center gap-2 disabled:opacity-70"
+                    onClick={handleInitiatePayment}
+                    disabled={isProcessing || !isInstamojoLoaded}
+                    className="w-full py-3 sm:py-3.5 lg:py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl sm:rounded-2xl text-sm sm:text-base lg:text-lg font-semibold shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 disabled:opacity-70"
                   >
                     {isProcessing ? (
                       <>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span className="text-sm sm:text-base">Confirming...</span>
+                        <LoaderSpinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        <span className="text-sm sm:text-base">Processing...</span>
+                      </>
+                    ) : !isInstamojoLoaded ? (
+                      <>
+                        <LoaderSpinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                        <span className="text-sm sm:text-base">Loading...</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                        I Have Paid
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                        Pay {formatPrice(totalAmount)}
                       </>
                     )}
                   </button>

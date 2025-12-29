@@ -21,6 +21,12 @@ export interface Booking {
   source: string;
   created_at: string;
   updated_at: string;
+  // Instamojo payment fields
+  instamojo_payment_request_id: string | null;
+  instamojo_payment_id: string | null;
+  instamojo_payment_url: string | null;
+  payment_method: string | null;
+  payment_fees: number | null;
 }
 
 export interface BookingItem {
@@ -73,4 +79,16 @@ export interface DashboardStats {
   pendingBookings: number;
   ticketsGenerated: number;
   ticketsUsed: number;
+}
+
+export interface PaymentLog {
+  id: string;
+  booking_id: string | null;
+  event_type: 'request_created' | 'webhook_received' | 'payment_verified';
+  instamojo_payment_request_id: string | null;
+  instamojo_payment_id: string | null;
+  status: string | null;
+  raw_payload: Record<string, unknown>;
+  mac_verified: boolean;
+  created_at: string;
 }
