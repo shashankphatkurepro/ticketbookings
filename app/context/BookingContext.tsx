@@ -66,22 +66,22 @@ const initialGroupBooking: GroupBooking = {
 
 // Group pricing functions
 const getNonAlcoholPrice = (count: number) => {
-  if (count >= 20) return 999;
-  if (count >= 10) return 1099;
-  if (count >= 5) return 1199;
-  return 1299;
+  if (count >= 20) return 1199;
+  if (count >= 10) return 1299;
+  if (count >= 5) return 1399;
+  return 1499;
 };
 
 const getMalePrice = (count: number) => {
-  if (count >= 10) return 2799;
-  if (count >= 5) return 2999;
-  return 3299;
+  if (count >= 10) return 3299;
+  if (count >= 5) return 3399;
+  return 3499;
 };
 
 const getFemalePrice = (count: number) => {
-  if (count >= 10) return 2099;
-  if (count >= 5) return 2199;
-  return 2299;
+  if (count >= 10) return 2799;
+  if (count >= 5) return 2899;
+  return 2999;
 };
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
