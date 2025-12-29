@@ -27,15 +27,15 @@ export default function BookingSidebar() {
 
   // Group pricing logic - With Alcohol
   const getMalePrice = (count: number) => {
-    if (count >= 10) return 2799;
-    if (count >= 5) return 2999;
-    return 3299; // 1-4 people
+    if (count >= 10) return 3299;
+    if (count >= 5) return 3399;
+    return 3499; // 1-4 people
   };
 
   const getFemalePrice = (count: number) => {
     if (count >= 10) return 2099;
     if (count >= 5) return 2199;
-    return 2299; // 1-4 people
+    return 2399; // 1-4 people
   };
 
   const nonAlcoholTotal = nonAlcoholCount * getNonAlcoholPrice(nonAlcoholCount);
