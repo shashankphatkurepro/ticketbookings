@@ -33,8 +33,8 @@ export default function BookingSidebar() {
   };
 
   const getFemalePrice = (count: number) => {
-    if (count >= 10) return 2099;
-    if (count >= 5) return 2199;
+    if (count >= 10) return 1999;
+    if (count >= 5) return 2099;
     return 2399; // 1-4 people
   };
 
