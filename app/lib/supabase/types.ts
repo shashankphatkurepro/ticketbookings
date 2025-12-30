@@ -100,3 +100,40 @@ export interface PaymentLog {
   mac_verified: boolean;
   created_at: string;
 }
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_order_amount: number;
+  max_discount_amount: number | null;
+  usage_limit: number | null;
+  usage_count: number;
+  valid_from: string;
+  valid_until: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCouponInput {
+  code: string;
+  description?: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_order_amount?: number;
+  max_discount_amount?: number;
+  usage_limit?: number;
+  valid_from?: string;
+  valid_until?: string;
+  is_active?: boolean;
+}
+
+export interface CouponValidationResult {
+  valid: boolean;
+  coupon?: Coupon;
+  discount_amount?: number;
+  error?: string;
+}

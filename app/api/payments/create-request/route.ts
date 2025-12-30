@@ -64,6 +64,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreatePay
         subtotal: body.subtotal || 0,
         group_total: body.group_total || 0,
         total_amount: body.total_amount,
+        discount_amount: body.discount_amount || 0,
+        discount_note: body.coupon_code ? `Coupon: ${body.coupon_code}` : null,
         payment_status: 'pending',
         source: 'website',
       })

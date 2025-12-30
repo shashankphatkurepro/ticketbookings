@@ -30,7 +30,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
     // First check our database
     const { data: booking, error: findError } = await supabase
       .from('bookings')
-      .select('id, booking_id, payment_status, instamojo_payment_id, customer_email')
+      .select('id, booking_id, payment_status, instamojo_payment_id, customer_email, discount_note, discount_amount')
       .eq('instamojo_payment_request_id', body.payment_request_id)
       .single();
 
@@ -104,6 +104,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
             } catch (ticketError) {
               console.error('Error generating tickets during verification:', ticketError);
             }
+
+            // Increment coupon usage if a coupon was used
+            if (booking.discount_note && booking.discount_amount > 0) {
+              try {
+                const couponCode = booking.discount_note.replace('Coupon: ', '');
+                const { data: coupon } = await supabase
+                  .from('coupons')
+                  .select('id, usage_count')
+                  .eq('code', couponCode)
+                  .single();
+
+                if (coupon) {
+                  await supabase
+                    .from('coupons')
+                    .update({ usage_count: (coupon.usage_count || 0) + 1 })
+                    .eq('id', coupon.id);
+                }
+              } catch (couponError) {
+                console.error('Error incrementing coupon usage:', couponError);
+              }
+            }
           }
 
           return NextResponse.json({
@@ -158,6 +179,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyPay
           });
         } catch (ticketError) {
           console.error('Error generating tickets during fallback verification:', ticketError);
+        }
+
+        // Increment coupon usage if a coupon was used
+        if (booking.discount_note && booking.discount_amount > 0) {
+          try {
+            const couponCode = booking.discount_note.replace('Coupon: ', '');
+            const { data: coupon } = await supabase
+              .from('coupons')
+              .select('id, usage_count')
+              .eq('code', couponCode)
+              .single();
+
+            if (coupon) {
+              await supabase
+                .from('coupons')
+                .update({ usage_count: (coupon.usage_count || 0) + 1 })
+                .eq('id', coupon.id);
+            }
+          } catch (couponError) {
+            console.error('Error incrementing coupon usage:', couponError);
+          }
         }
 
         return NextResponse.json({

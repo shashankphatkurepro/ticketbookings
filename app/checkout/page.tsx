@@ -30,7 +30,10 @@ import {
   Check,
   CreditCard,
   Wallet,
+  Tag,
+  X,
 } from 'lucide-react';
+import { Coupon } from '../lib/supabase/types';
 
 const WHATSAPP_NUMBER = '917977127312';
 
@@ -64,6 +67,13 @@ function CheckoutContent() {
     phone: booking.customerInfo.phone,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   // Handle successful payment redirect from Instamojo
   useEffect(() => {
@@ -140,8 +150,65 @@ function CheckoutContent() {
   const subtotal = getTotalAmount();
   const groupBookingTotal = getGroupBookingTotal();
   const groupBookingItems = getGroupBookingItems();
-  const totalAmount = subtotal + groupBookingTotal;
+  const orderSubtotal = subtotal + groupBookingTotal;
+  const totalAmount = orderSubtotal - couponDiscount;
   const hasGroupBooking = groupBookingItems.length > 0;
+
+  // Validate coupon when order total changes
+  useEffect(() => {
+    if (appliedCoupon && orderSubtotal > 0) {
+      // Recalculate discount when order total changes
+      validateCoupon(appliedCoupon.code, true);
+    }
+  }, [orderSubtotal]);
+
+  const validateCoupon = async (code: string, silent = false) => {
+    if (!code.trim()) {
+      if (!silent) setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    setValidatingCoupon(true);
+    setCouponError('');
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: code.trim(),
+          order_total: orderSubtotal,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.valid) {
+        setAppliedCoupon(data.coupon);
+        setCouponDiscount(data.discount_amount);
+        setCouponCode('');
+      } else {
+        if (!silent) {
+          setCouponError(data.error || 'Invalid coupon code');
+        }
+        // If revalidating and coupon is no longer valid, remove it
+        if (silent && appliedCoupon) {
+          setAppliedCoupon(null);
+          setCouponDiscount(0);
+        }
+      }
+    } catch (error) {
+      if (!silent) setCouponError('Failed to validate coupon');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponError('');
+  };
 
   // Instamojo payment handlers
   const handlePaymentSuccess = useCallback(async (response: InstamojoResponse) => {
@@ -253,6 +320,9 @@ function CheckoutContent() {
           subtotal: subtotal,
           group_total: groupBookingTotal,
           total_amount: totalAmount,
+          coupon_id: appliedCoupon?.id || null,
+          coupon_code: appliedCoupon?.code || null,
+          discount_amount: couponDiscount,
         }),
       });
 
@@ -1104,8 +1174,76 @@ Please find the payment screenshot attached.`;
                   )}
                 </div>
 
-                {/* Total */}
+                {/* Coupon Code Input */}
                 <div className="pt-3 sm:pt-4 border-t border-gray-200">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-green-600" />
+                        <div>
+                          <p className="text-xs sm:text-sm font-medium text-green-800">{appliedCoupon.code}</p>
+                          <p className="text-[10px] sm:text-xs text-green-600">-{formatPrice(couponDiscount)} off</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4 text-green-600" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => {
+                              setCouponCode(e.target.value.toUpperCase());
+                              setCouponError('');
+                            }}
+                            placeholder="Coupon code"
+                            className="w-full pl-9 pr-3 py-2.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-indigo-300 text-gray-800 placeholder-gray-400"
+                          />
+                        </div>
+                        <button
+                          onClick={() => validateCoupon(couponCode)}
+                          disabled={validatingCoupon || !couponCode.trim()}
+                          className="px-3 sm:px-4 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-xl text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {validatingCoupon ? (
+                            <LoaderSpinner className="w-4 h-4 animate-spin" />
+                          ) : (
+                            'Apply'
+                          )}
+                        </button>
+                      </div>
+                      {couponError && (
+                        <p className="mt-1.5 text-[10px] sm:text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {couponError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Total with Discount */}
+                <div className="pt-3 sm:pt-4 border-t border-gray-200">
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-xs sm:text-sm mb-2">
+                      <span className="text-gray-600">Subtotal</span>
+                      <span className="text-gray-800 font-medium">{formatPrice(orderSubtotal)}</span>
+                    </div>
+                  )}
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-xs sm:text-sm mb-2">
+                      <span className="text-green-600">Discount</span>
+                      <span className="text-green-600 font-medium">-{formatPrice(couponDiscount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-800 text-sm sm:text-base">Total</span>
                     <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">

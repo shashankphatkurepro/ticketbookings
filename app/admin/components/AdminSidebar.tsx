@@ -8,12 +8,14 @@ import {
   Ticket,
   Settings,
   PartyPopper,
+  Tag,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { href: '/admin/tickets', label: 'Tickets', icon: Ticket },
+  { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

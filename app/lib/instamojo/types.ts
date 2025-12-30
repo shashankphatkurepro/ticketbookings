@@ -127,6 +127,9 @@ export interface CreatePaymentRequestBody {
   subtotal: number;
   group_total: number;
   total_amount: number;
+  coupon_id?: string;
+  coupon_code?: string;
+  discount_amount?: number;
 }
 
 export interface BookingItem {
