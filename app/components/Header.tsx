@@ -28,6 +28,7 @@ export default function Header() {
   }, [mobileMenuOpen]);
 
   const navLinks = [
+    { href: '#gallery', label: 'Gallery' },
     { href: '#about', label: 'About' },
     { href: '#highlights', label: 'Highlights' },
     { href: '#activities', label: 'Activities' },

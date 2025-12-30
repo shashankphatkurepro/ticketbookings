@@ -3,6 +3,7 @@
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import BookingSidebar from './components/BookingSidebar';
+import GallerySection from './components/GallerySection';
 import AboutSection from './components/AboutSection';
 import HighlightsSection from './components/HighlightsSection';
 import ActivitiesSection from './components/ActivitiesSection';
@@ -32,6 +33,7 @@ export default function EventPage() {
 
           {/* Main Content - Right Side */}
           <div className="flex-1 min-w-0 space-y-8">
+            <GallerySection />
             <AboutSection />
             <HighlightsSection />
             <ActivitiesSection />
