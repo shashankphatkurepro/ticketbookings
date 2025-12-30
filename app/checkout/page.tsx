@@ -48,6 +48,16 @@ function CheckoutContent() {
   const [isInstamojoLoaded, setIsInstamojoLoaded] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [generatedTickets, setGeneratedTickets] = useState<Array<{ ticket_id: string; ticket_type: string }>>([]);
+  // Check if we're returning from a payment redirect on initial load
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const paymentStatus = params.get('payment_status');
+      const bookingIdParam = params.get('booking_id');
+      return (paymentStatus === 'success' || paymentStatus === 'Credit') && !!bookingIdParam;
+    }
+    return false;
+  });
   const [formData, setFormData] = useState({
     name: booking.customerInfo.name,
     email: booking.customerInfo.email,
@@ -62,7 +72,9 @@ function CheckoutContent() {
     const paymentId = searchParams.get('payment_id');
     const paymentReqId = searchParams.get('payment_request_id');
 
-    if (paymentStatus === 'success' && bookingIdParam) {
+    if ((paymentStatus === 'success' || paymentStatus === 'Credit') && bookingIdParam) {
+      // Show verifying state while we confirm payment
+      setIsVerifyingPayment(true);
       // Verify payment with backend
       verifyPayment(paymentReqId || '', paymentId || '');
     }
@@ -99,13 +111,20 @@ function CheckoutContent() {
         setBookingId(data.bookingId);
         setPaymentComplete(data.bookingId, paymentId);
         setIsComplete(true);
+        setIsVerifyingPayment(false);
         // Fetch tickets for download using UUID
         if (data.bookingUuid) {
           fetchTickets(data.bookingUuid);
         }
+      } else {
+        // Payment not confirmed yet - might need retry or show error
+        setIsVerifyingPayment(false);
+        setPaymentError('Payment verification pending. Please check your booking status or contact support.');
       }
     } catch (error) {
       console.error('Payment verification failed:', error);
+      setIsVerifyingPayment(false);
+      setPaymentError('Payment verification failed. Please contact support.');
     }
   };
 
@@ -288,6 +307,22 @@ Please find the payment screenshot attached.`;
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
+
+  // Verifying Payment State - Show while verifying payment from redirect
+  if (isVerifyingPayment) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-6 sm:py-10">
+        <div className="max-w-md w-full glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <LoaderSpinner className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1.5 sm:mb-2">Verifying Payment...</h1>
+          <p className="text-sm sm:text-base text-gray-600">Please wait while we confirm your payment</p>
+          <p className="text-xs text-gray-500 mt-4">This may take a few seconds</p>
+        </div>
+      </div>
+    );
+  }
 
   // Success State
   if (isComplete) {
@@ -509,6 +544,22 @@ Please find the payment screenshot attached.`;
               />
             </div>
           </div>
+
+          {/* Payment Error Message */}
+          {paymentError && (
+            <div className="mb-6 p-4 sm:p-5 bg-red-50 border border-red-200 rounded-2xl">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-red-800 mb-1">Payment Verification Issue</h3>
+                  <p className="text-sm text-red-700">{paymentError}</p>
+                  <p className="text-xs text-red-600 mt-2">
+                    If you completed payment, please contact us on WhatsApp at +91 79771 27312 with your payment details.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Empty Cart Message */}
           <div className="text-center mb-6 sm:mb-8">

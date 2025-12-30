@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ChevronLeft, ChevronRight, Eye, Plus } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Eye, Plus, Trash2 } from 'lucide-react';
 
 interface Booking {
   id: string;
@@ -24,6 +24,8 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -56,6 +58,25 @@ export default function BookingsPage() {
     e.preventDefault();
     setPage(1);
     fetchBookings();
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/bookings/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchBookings();
+      } else {
+        console.error('Failed to delete booking');
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
   };
 
   const getStatusBadge = (paymentStatus: string) => {
@@ -211,13 +232,22 @@ export default function BookingsPage() {
                       </p>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/admin/bookings/${booking.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
-                      >
-                        <Eye className="w-4 h-4" />
-                        View
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/bookings/${booking.id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </Link>
+                        <button
+                          onClick={() => setDeleteId(booking.id)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -251,6 +281,44 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-white mb-2">Delete Booking</h3>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to delete this booking? This will also delete all associated tickets. This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteId)}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
