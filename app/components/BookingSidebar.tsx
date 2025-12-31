@@ -46,7 +46,7 @@ export default function BookingSidebar() {
   // Fixed availability numbers to avoid hydration mismatch
   const fakeAvailability = useMemo(() => {
     return eventData.tickets.reduce((acc, ticket, index) => {
-      acc[ticket.id] = 25 + ((index * 7) % 30); // 45-74 range, deterministic
+      acc[ticket.id] = 20 + ((index * 7) % 30); // 20-49 range, deterministic
       return acc;
     }, {} as Record<string, number>);
   }, []);
