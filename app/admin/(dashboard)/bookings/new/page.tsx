@@ -179,9 +179,9 @@ export default function NewBookingPage() {
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 md:gap-4">
         <Link
           href="/admin/bookings"
           className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -189,22 +189,22 @@ export default function NewBookingPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Create New Booking</h1>
-          <p className="text-gray-400 mt-1">Create a manual booking with custom discount</p>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Create Booking</h1>
+          <p className="text-gray-400 mt-1 text-sm md:text-base hidden sm:block">Create a manual booking with custom discount</p>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400">
+        <div className="p-3 md:p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         {/* Customer Information */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Customer Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-4">Customer Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
                 Name <span className="text-red-400">*</span>
@@ -245,13 +245,13 @@ export default function NewBookingPage() {
         </div>
 
         {/* Ticket Selection */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Select Tickets</h2>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-4">Select Tickets</h2>
           <div className="space-y-3">
             {tickets.map((ticket) => (
               <div
                 key={ticket.ticketId}
-                className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-gray-800 rounded-lg gap-3"
               >
                 <div className="flex-1">
                   <p className="font-medium text-white">{ticket.ticketName}</p>
@@ -354,9 +354,9 @@ export default function NewBookingPage() {
         </div>
 
         {/* Discount */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Discount</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-4">Discount</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Discount Type
@@ -365,19 +365,19 @@ export default function NewBookingPage() {
                 <button
                   type="button"
                   onClick={() => setDiscountType('amount')}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2.5 rounded-lg border transition-colors text-sm md:text-base ${
                     discountType === 'amount'
                       ? 'bg-purple-600 border-purple-600 text-white'
                       : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
                   }`}
                 >
                   <IndianRupee className="w-4 h-4" />
-                  Fixed Amount
+                  <span className="hidden sm:inline">Fixed</span> Amount
                 </button>
                 <button
                   type="button"
                   onClick={() => setDiscountType('percentage')}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2.5 rounded-lg border transition-colors text-sm md:text-base ${
                     discountType === 'percentage'
                       ? 'bg-purple-600 border-purple-600 text-white'
                       : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
@@ -416,16 +416,16 @@ export default function NewBookingPage() {
                 value={discountNote}
                 onChange={(e) => setDiscountNote(e.target.value)}
                 className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="e.g., Corporate discount, Early bird, etc."
+                placeholder="e.g., Corporate discount"
               />
             </div>
           </div>
         </div>
 
         {/* Payment & Notes */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Payment & Notes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-4">Payment & Notes</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
                 Payment Status
@@ -435,7 +435,7 @@ export default function NewBookingPage() {
                 onChange={(e) => setPaymentStatus(e.target.value as 'pending' | 'confirmed')}
                 className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="confirmed">Confirmed (Payment Received)</option>
+                <option value="confirmed">Confirmed (Paid)</option>
                 <option value="pending">Pending</option>
               </select>
             </div>
@@ -455,8 +455,8 @@ export default function NewBookingPage() {
         </div>
 
         {/* Summary */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Order Summary</h2>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-4">Order Summary</h2>
           <div className="space-y-3">
             <div className="flex justify-between text-gray-400">
               <span>Subtotal ({totalTickets} tickets)</span>
@@ -479,17 +479,17 @@ export default function NewBookingPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
           <Link
             href="/admin/bookings"
-            className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
+            className="px-6 py-3 text-gray-400 hover:text-white transition-colors text-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading || totalTickets === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             Create Booking
