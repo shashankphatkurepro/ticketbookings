@@ -2,13 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/app/lib/supabase/admin';
 import { nanoid } from 'nanoid';
 
+interface TicketItem {
+  ticketId: string;
+  ticketName: string;
+  price: number;
+  quantity: number;
+}
+
 interface WalkInRequest {
   name: string;
-  email: string;
+  email?: string;
   phone: string;
-  ticket_type: string;
-  quantity: number;
   notes?: string;
+  items: TicketItem[];
+  total_amount: number;
 }
 
 // POST - Create walk-in entry
@@ -29,23 +36,31 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!body.ticket_type) {
+    if (!body.items || body.items.length === 0) {
       return NextResponse.json(
-        { error: 'Ticket type is required' },
+        { error: 'At least one ticket is required' },
         { status: 400 }
       );
     }
-    if (!body.quantity || body.quantity < 1) {
-      return NextResponse.json(
-        { error: 'Quantity must be at least 1' },
-        { status: 400 }
-      );
+
+    // Validate items
+    for (const item of body.items) {
+      if (!item.ticketId || !item.ticketName || item.quantity < 1) {
+        return NextResponse.json(
+          { error: 'Invalid ticket item' },
+          { status: 400 }
+        );
+      }
     }
 
     const supabase = createAdminClient();
 
     // Create a virtual booking for walk-in people
     const bookingId = `WI-${nanoid(8)}`;
+
+    // Calculate totals
+    const subtotal = body.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalQuantity = body.items.reduce((sum, item) => sum + item.quantity, 0);
 
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
@@ -54,17 +69,10 @@ export async function POST(request: NextRequest) {
         customer_name: body.name,
         customer_email: body.email || null,
         customer_phone: body.phone,
-        items: [
-          {
-            ticketName: body.ticket_type,
-            ticketId: body.ticket_type,
-            price: 0,
-            quantity: body.quantity,
-          },
-        ],
-        subtotal: 0,
+        items: body.items,
+        subtotal: subtotal,
         group_total: 0,
-        total_amount: 0,
+        total_amount: body.total_amount || subtotal,
         discount_amount: 0,
         discount_percentage: 0,
         payment_status: 'confirmed',
@@ -86,18 +94,22 @@ export async function POST(request: NextRequest) {
 
     // Create tickets for walk-in entry (immediately marked as used)
     const tickets = [];
-    for (let i = 1; i <= body.quantity; i++) {
-      tickets.push({
-        ticket_id: `WI-${nanoid(10)}`,
-        booking_id: booking.id,
-        ticket_type: body.ticket_type,
-        ticket_price: 0,
-        attendee_number: i,
-        qr_code_data: `WI-${nanoid(10)}`,
-        is_used: true,
-        used_at: new Date().toISOString(),
-        used_by: 'Walk-in',
-      });
+    let attendeeNumber = 1;
+
+    for (const item of body.items) {
+      for (let i = 0; i < item.quantity; i++) {
+        tickets.push({
+          ticket_id: `WI-${nanoid(10)}`,
+          booking_id: booking.id,
+          ticket_type: item.ticketName,
+          ticket_price: item.price,
+          attendee_number: attendeeNumber++,
+          qr_code_data: `WI-${nanoid(10)}`,
+          is_used: true,
+          used_at: new Date().toISOString(),
+          used_by: 'Walk-in',
+        });
+      }
     }
 
     const { error: ticketsError } = await supabase
@@ -117,7 +129,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: `Walk-in entry added for ${body.name} with ${body.quantity} ticket(s)`,
+        message: `Walk-in entry added for ${body.name} with ${totalQuantity} ticket(s)`,
         booking_id: bookingId,
       },
       { status: 201 }

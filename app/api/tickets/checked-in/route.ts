@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
           id,
           customer_name,
           customer_email,
-          customer_phone
+          customer_phone,
+          source
         )
       `)
       .eq('is_used', true)
