@@ -16,6 +16,7 @@ import {
   CreditCard,
   FileText,
   RefreshCw,
+  Package,
 } from 'lucide-react';
 import { Booking, Ticket as TicketType, BookingItem } from '@/app/lib/supabase/types';
 
@@ -28,6 +29,7 @@ export default function BookingDetailsPage({ params }: { params: Promise<{ id: s
   const [paymentRef, setPaymentRef] = useState('');
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   useEffect(() => {
     fetchBooking();
@@ -119,6 +121,31 @@ export default function BookingDetailsPage({ params }: { params: Promise<{ id: s
       console.error('Failed to process refund:', error);
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    setDownloadLoading(true);
+    try {
+      const response = await fetch(`/api/bookings/${id}/tickets/download`);
+      if (!response.ok) {
+        throw new Error('Failed to download tickets');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${booking?.booking_id}-tickets.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to download tickets:', error);
+      alert('Failed to download tickets');
+    } finally {
+      setDownloadLoading(false);
     }
   };
 
@@ -455,9 +482,23 @@ export default function BookingDetailsPage({ params }: { params: Promise<{ id: s
 
             {booking.tickets_generated && (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-green-400">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>{tickets.length} tickets generated</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-green-400">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>{tickets.length} tickets generated</span>
+                  </div>
+                  <button
+                    onClick={handleBulkDownload}
+                    disabled={downloadLoading}
+                    className="py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {downloadLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Package className="w-4 h-4" />
+                    )}
+                    {downloadLoading ? 'Downloading...' : 'Download All'}
+                  </button>
                 </div>
                 {tickets.map((ticket) => (
                   <div key={ticket.id} className="p-3 bg-gray-800 rounded-lg space-y-2">
