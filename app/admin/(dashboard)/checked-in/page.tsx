@@ -71,37 +71,37 @@ export default function CheckedInUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Checked-in Users</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Checked-in Users</h1>
           <p className="text-gray-400 mt-1">{total} users checked in</p>
         </div>
         <Link
           href="/admin/checked-in/add-walk-in"
-          className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
         >
           <UserPlus className="w-4 h-4" />
-          Add Walk-in
+          <span>Add Walk-in</span>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <form onSubmit={handleSearch} className="flex-1 min-w-[300px]">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, phone, or ticket ID..."
+              placeholder="Search by name, phone, or ticket..."
               className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
         </form>
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -112,90 +112,130 @@ export default function CheckedInUsersPage() {
             No checked-in users found
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Ticket ID
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Ticket Type
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Attendee #
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Checked-in At
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Checked-in By
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {checkedInTickets.map((ticket) => (
-                  <tr key={ticket.id} className="hover:bg-gray-800/50">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <p className="font-mono text-sm text-purple-400">
-                          {ticket.ticket_id}
-                        </p>
-                        {ticket.source === 'walk-in' && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                            Walk-in
-                          </span>
-                        )}
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-800">
+              {checkedInTickets.map((ticket) => (
+                <div key={ticket.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-gray-800 rounded-lg">
+                        <User className="w-4 h-4 text-gray-400" />
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 bg-gray-800 rounded-lg">
-                          <User className="w-4 h-4 text-gray-400" />
-                        </div>
-                        <p className="font-medium text-white">
-                          {ticket.customer_name}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-400">{ticket.customer_email}</p>
+                      <div>
+                        <p className="font-medium text-white">{ticket.customer_name}</p>
                         <p className="text-sm text-gray-400">{ticket.customer_phone}</p>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">
-                        {ticket.ticket_type}
+                    </div>
+                    {ticket.source === 'walk-in' && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                        Walk-in
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-white font-medium">
-                        #{ticket.attendee_number}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <Clock className="w-4 h-4" />
-                        {formatDate(ticket.used_at)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-400">
-                        {ticket.used_by || 'System'}
-                      </p>
-                    </td>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-sm text-purple-400">{ticket.ticket_id}</span>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">
+                      {ticket.ticket_type}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatDate(ticket.used_at)}</span>
+                    </div>
+                    <span>#{ticket.attendee_number}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Ticket ID
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Ticket Type
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Attendee #
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Checked-in At
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Checked-in By
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {checkedInTickets.map((ticket) => (
+                    <tr key={ticket.id} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <p className="font-mono text-sm text-purple-400">
+                            {ticket.ticket_id}
+                          </p>
+                          {ticket.source === 'walk-in' && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                              Walk-in
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-gray-800 rounded-lg">
+                            <User className="w-4 h-4 text-gray-400" />
+                          </div>
+                          <p className="font-medium text-white">
+                            {ticket.customer_name}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-400">{ticket.customer_email}</p>
+                          <p className="text-sm text-gray-400">{ticket.customer_phone}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">
+                          {ticket.ticket_type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-white font-medium">
+                          #{ticket.attendee_number}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                          <Clock className="w-4 h-4" />
+                          {formatDate(ticket.used_at)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-gray-400">
+                          {ticket.used_by || 'System'}
+                        </p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination */}

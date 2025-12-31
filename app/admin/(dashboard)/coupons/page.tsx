@@ -220,24 +220,24 @@ export default function CouponsPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Coupon Codes</h1>
-          <p className="text-gray-400">Create and manage discount codes</p>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Coupon Codes</h1>
+          <p className="text-gray-400 mt-1">Create and manage discount codes</p>
         </div>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-medium transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-medium transition-all"
         >
           <Plus className="w-5 h-5" />
-          Create Coupon
+          <span>Create Coupon</span>
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -248,12 +248,12 @@ export default function CouponsPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto">
           {(['all', 'active', 'inactive'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2.5 rounded-xl font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
                 statusFilter === status
                   ? 'bg-purple-500 text-white'
                   : 'bg-gray-800 text-gray-400 hover:text-white'
@@ -262,13 +262,13 @@ export default function CouponsPage() {
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
+          <button
+            onClick={fetchCoupons}
+            className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-400 hover:text-white transition-colors"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={fetchCoupons}
-          className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-400 hover:text-white transition-colors"
-        >
-          <RefreshCw className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Coupons Grid */}

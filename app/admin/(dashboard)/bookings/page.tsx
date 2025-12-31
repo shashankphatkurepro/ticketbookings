@@ -102,44 +102,44 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Bookings</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-white">Bookings</h1>
           <p className="text-gray-400 mt-1">{total} total bookings</p>
         </div>
         <Link
           href="/admin/bookings/new"
-          className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Create Booking
+          <span>Create Booking</span>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <form onSubmit={handleSearch} className="flex-1 min-w-[300px]">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by booking ID, name, email, or phone..."
+              placeholder="Search by ID, name, phone..."
               className="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
         </form>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-gray-400" />
+          <Filter className="w-5 h-5 text-gray-400 hidden sm:block" />
           <select
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 sm:flex-none px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -149,7 +149,7 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -160,62 +160,30 @@ export default function BookingsPage() {
             No bookings found
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Booking
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Tickets
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-800/50">
-                    <td className="px-4 py-3">
-                      <p className="font-mono text-sm text-white">
-                        {booking.booking_id}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-white">
-                        {booking.customer_name}
-                      </p>
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-800">
+              {bookings.map((booking) => (
+                <div key={booking.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-white">{booking.customer_name}</p>
                       <p className="text-sm text-gray-400">{booking.customer_phone}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-white">
-                        ₹{booking.total_amount.toLocaleString()}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusBadge(
-                          booking.payment_status
-                        )}`}
-                      >
-                        {booking.payment_status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusBadge(
+                        booking.payment_status
+                      )}`}
+                    >
+                      {booking.payment_status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-mono text-gray-400">{booking.booking_id}</span>
+                    <span className="font-medium text-white">₹{booking.total_amount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           booking.tickets_generated
@@ -223,37 +191,124 @@ export default function BookingsPage() {
                             : 'bg-gray-500/20 text-gray-400'
                         }`}
                       >
-                        {booking.tickets_generated ? 'Generated' : 'Pending'}
+                        {booking.tickets_generated ? 'Tickets Ready' : 'No Tickets'}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-400">
-                        {formatDate(booking.created_at)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/admin/bookings/${booking.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View
-                        </Link>
-                        <button
-                          onClick={() => setDeleteId(booking.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/bookings/${booking.id}`}
+                        className="p-2 text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => setDeleteId(booking.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Booking
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Tickets
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {bookings.map((booking) => (
+                    <tr key={booking.id} className="hover:bg-gray-800/50">
+                      <td className="px-4 py-3">
+                        <p className="font-mono text-sm text-white">
+                          {booking.booking_id}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-white">
+                          {booking.customer_name}
+                        </p>
+                        <p className="text-sm text-gray-400">{booking.customer_phone}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-white">
+                          ₹{booking.total_amount.toLocaleString()}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusBadge(
+                            booking.payment_status
+                          )}`}
+                        >
+                          {booking.payment_status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            booking.tickets_generated
+                              ? 'bg-green-500/20 text-green-400'
+                              : 'bg-gray-500/20 text-gray-400'
+                          }`}
+                        >
+                          {booking.tickets_generated ? 'Generated' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm text-gray-400">
+                          {formatDate(booking.created_at)}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/bookings/${booking.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View
+                          </Link>
+                          <button
+                            onClick={() => setDeleteId(booking.id)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination */}

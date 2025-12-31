@@ -170,7 +170,7 @@ export default function AdminDashboard() {
 
       {/* Recent Bookings */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl">
-        <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+        <div className="p-4 md:p-5 border-b border-gray-800 flex items-center justify-between">
           <h3 className="font-semibold text-white">Recent Bookings</h3>
           <Link
             href="/admin/bookings"
@@ -190,15 +190,15 @@ export default function AdminDashboard() {
               <Link
                 key={booking.id}
                 href={`/admin/bookings/${booking.id}`}
-                className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-800/50 transition-colors gap-2"
               >
-                <div className="flex items-center gap-4">
-                  <div>
-                    <p className="font-medium text-white">{booking.customer_name}</p>
-                    <p className="text-sm text-gray-400">{booking.booking_id}</p>
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-white truncate">{booking.customer_name}</p>
+                    <p className="text-sm text-gray-400 font-mono">{booking.booking_id}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(
                       booking.payment_status

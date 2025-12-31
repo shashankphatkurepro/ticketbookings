@@ -11,6 +11,7 @@ import {
   Tag,
   UserCheck,
   Users,
+  X,
 } from 'lucide-react';
 
 const navItems = [
@@ -23,7 +24,12 @@ const navItems = [
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -33,17 +39,40 @@ export default function AdminSidebar() {
     return pathname.startsWith(href);
   };
 
+  const handleNavClick = () => {
+    // Close sidebar on mobile when navigating
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 min-h-screen p-4">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-2 mb-8">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-          <PartyPopper className="w-5 h-5 text-white" />
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 border-r border-gray-800 p-4
+        transform transition-transform duration-300 ease-in-out
+        lg:relative lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
+    >
+      {/* Header with close button for mobile */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+            <PartyPopper className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-white">Mangozzz</h1>
+            <p className="text-xs text-gray-500">Admin Panel</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-white">Mangozzz</h1>
-          <p className="text-xs text-gray-500">Admin Panel</p>
-        </div>
+        {/* Close button - only visible on mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -56,6 +85,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavClick}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                 active
                   ? 'bg-purple-600/20 text-purple-400'
