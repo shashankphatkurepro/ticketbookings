@@ -151,7 +151,7 @@ export default function SalesPopup() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
             <span className="text-xs text-gray-600">
-              <span className="font-medium">{Math.floor(Math.random() * 20) + 10}</span> people viewing this event
+              <span className="font-medium">{Math.floor(Math.random() * 20) + 20}</span> people viewing this event
             </span>
           </div>
         </div>
