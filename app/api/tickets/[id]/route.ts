@@ -1,6 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/app/lib/supabase/admin';
 
+// DELETE - Delete a checked-in ticket
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = createAdminClient();
+
+    // Get the ticket first to check if it exists and get booking info
+    const { data: ticket, error: fetchError } = await supabase
+      .from('tickets')
+      .select('id, booking_id, bookings:booking_id(source)')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !ticket) {
+      return NextResponse.json(
+        { error: 'Ticket not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete the ticket
+    const { error: deleteError } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Error deleting ticket:', deleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete ticket' },
+        { status: 500 }
+      );
+    }
+
+    // If it's a walk-in booking, check if there are any remaining tickets
+    const booking = ticket.bookings as { source: string } | null;
+    if (booking?.source === 'walk-in') {
+      const { count } = await supabase
+        .from('tickets')
+        .select('id', { count: 'exact', head: true })
+        .eq('booking_id', ticket.booking_id);
+
+      // If no tickets left, delete the walk-in booking too
+      if (count === 0) {
+        await supabase
+          .from('bookings')
+          .delete()
+          .eq('id', ticket.booking_id);
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error in DELETE /api/tickets/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 // GET - Verify ticket (public endpoint for QR code scanning)
 export async function GET(
   request: NextRequest,

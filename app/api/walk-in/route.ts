@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       .insert({
         booking_id: bookingId,
         customer_name: body.name,
-        customer_email: body.email || null,
+        customer_email: body.email || `${body.phone}@walk-in.local`,
         customer_phone: body.phone,
         items: body.items,
         subtotal: subtotal,

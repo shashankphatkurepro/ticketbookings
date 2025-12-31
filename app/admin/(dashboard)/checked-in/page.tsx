@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ChevronLeft, ChevronRight, User, Clock, UserPlus } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, User, Clock, UserPlus, Trash2 } from 'lucide-react';
 
 interface CheckedInTicket {
   id: string;
@@ -25,6 +25,8 @@ export default function CheckedInUsersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchCheckedInTickets = useCallback(async () => {
     setLoading(true);
@@ -56,6 +58,25 @@ export default function CheckedInUsersPage() {
     e.preventDefault();
     setPage(1);
     fetchCheckedInTickets();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/tickets/${deleteId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setCheckedInTickets((prev) => prev.filter((t) => t.id !== deleteId));
+        setTotal((prev) => prev - 1);
+      }
+    } catch (error) {
+      console.error('Failed to delete ticket:', error);
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -127,11 +148,20 @@ export default function CheckedInUsersPage() {
                         <p className="text-sm text-gray-400">{ticket.customer_phone}</p>
                       </div>
                     </div>
-                    {ticket.source === 'walk-in' && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
-                        Walk-in
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {ticket.source === 'walk-in' && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                          Walk-in
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setDeleteId(ticket.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-sm text-purple-400">{ticket.ticket_id}</span>
@@ -175,6 +205,9 @@ export default function CheckedInUsersPage() {
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Checked-in By
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -230,6 +263,15 @@ export default function CheckedInUsersPage() {
                           {ticket.used_by || 'System'}
                         </p>
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setDeleteId(ticket.id)}
+                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -263,6 +305,42 @@ export default function CheckedInUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-sm p-6">
+            <h3 className="text-lg font-semibold text-white mb-2">Delete Entry?</h3>
+            <p className="text-gray-400 mb-6">This will remove the checked-in entry. This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
