@@ -128,7 +128,7 @@ export default function CustomersPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.name.trim() || !formData.phone.trim()) return;
+    if (!formData.name.trim() || !isValidPhone(formData.phone)) return;
 
     // Check database for booking/ticket status
     const dbStatus = await checkBookingStatus(formData.phone);
@@ -415,13 +415,27 @@ export default function CustomersPage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">
                   Phone <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="+91 XXXXXXXXXX"
-                />
+                <div className="relative">
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    maxLength={10}
+                    className={`w-full px-4 py-2.5 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      formData.phone && !isValidPhone(formData.phone)
+                        ? 'border-yellow-500'
+                        : formData.phone && isValidPhone(formData.phone)
+                        ? 'border-green-500'
+                        : 'border-gray-700'
+                    }`}
+                    placeholder="10 digit phone number"
+                  />
+                  <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                    formData.phone.length === 10 ? 'text-green-400' : 'text-gray-500'
+                  }`}>
+                    {formData.phone.length}/10
+                  </span>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -499,7 +513,7 @@ export default function CustomersPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={!formData.name.trim() || !formData.phone.trim()}
+                disabled={!formData.name.trim() || !isValidPhone(formData.phone)}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Check className="w-4 h-4" />
