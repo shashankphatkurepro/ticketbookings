@@ -3,13 +3,14 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Minus, Percent, IndianRupee, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Percent, IndianRupee, Loader2, Pencil, Check, X } from 'lucide-react';
 import { eventData } from '@/app/data/eventData';
 
 interface TicketSelection {
   ticketId: string;
   ticketName: string;
-  price: number;
+  basePrice: number;
+  customPrice: number;
   quantity: number;
 }
 
@@ -28,10 +29,15 @@ export default function NewBookingPage() {
     eventData.tickets.map((t) => ({
       ticketId: t.id,
       ticketName: t.name,
-      price: t.price,
+      basePrice: t.price,
+      customPrice: t.price,
       quantity: 0,
     }))
   );
+
+  // Price editing state
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [tempPrice, setTempPrice] = useState<number>(0);
 
   // Discount
   const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
@@ -44,7 +50,7 @@ export default function NewBookingPage() {
 
   // Calculate totals
   const calculations = useMemo(() => {
-    const subtotal = tickets.reduce((sum, t) => sum + t.price * t.quantity, 0);
+    const subtotal = tickets.reduce((sum, t) => sum + t.customPrice * t.quantity, 0);
     let discountAmount = 0;
     let discountPercentage = 0;
 
@@ -71,6 +77,36 @@ export default function NewBookingPage() {
       prev.map((t) =>
         t.ticketId === ticketId
           ? { ...t, quantity: Math.max(0, t.quantity + delta) }
+          : t
+      )
+    );
+  };
+
+  const startEditingPrice = (ticketId: string, currentPrice: number) => {
+    setEditingPriceId(ticketId);
+    setTempPrice(currentPrice);
+  };
+
+  const savePrice = (ticketId: string) => {
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.ticketId === ticketId
+          ? { ...t, customPrice: Math.max(0, tempPrice) }
+          : t
+      )
+    );
+    setEditingPriceId(null);
+  };
+
+  const cancelEditingPrice = () => {
+    setEditingPriceId(null);
+  };
+
+  const resetPrice = (ticketId: string) => {
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.ticketId === ticketId
+          ? { ...t, customPrice: t.basePrice }
           : t
       )
     );
@@ -109,7 +145,7 @@ export default function NewBookingPage() {
           items: selectedTickets.map((t) => ({
             ticketId: t.ticketId,
             ticketName: t.ticketName,
-            price: t.price,
+            price: t.customPrice,
             quantity: t.quantity,
           })),
           group_booking: null,
@@ -217,11 +253,75 @@ export default function NewBookingPage() {
                 key={ticket.ticketId}
                 className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
               >
-                <div>
+                <div className="flex-1">
                   <p className="font-medium text-white">{ticket.ticketName}</p>
-                  <p className="text-sm text-gray-400">
-                    ₹{ticket.price.toLocaleString()} per ticket
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {editingPriceId === ticket.ticketId ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-400">₹</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={tempPrice}
+                          onChange={(e) => setTempPrice(Number(e.target.value))}
+                          className="w-24 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              savePrice(ticket.ticketId);
+                            } else if (e.key === 'Escape') {
+                              cancelEditingPrice();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => savePrice(ticket.ticketId)}
+                          className="p-1 text-green-400 hover:text-green-300 hover:bg-gray-700 rounded transition-colors"
+                          title="Save price"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingPrice}
+                          className="p-1 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded transition-colors"
+                          title="Cancel"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm ${ticket.customPrice !== ticket.basePrice ? 'text-yellow-400' : 'text-gray-400'}`}>
+                          ₹{ticket.customPrice.toLocaleString()} per ticket
+                        </span>
+                        {ticket.customPrice !== ticket.basePrice && (
+                          <span className="text-xs text-gray-500 line-through">
+                            ₹{ticket.basePrice.toLocaleString()}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => startEditingPrice(ticket.ticketId, ticket.customPrice)}
+                          className="p-1 text-gray-500 hover:text-purple-400 hover:bg-gray-700 rounded transition-colors"
+                          title="Edit price"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        {ticket.customPrice !== ticket.basePrice && (
+                          <button
+                            type="button"
+                            onClick={() => resetPrice(ticket.ticketId)}
+                            className="text-xs text-gray-500 hover:text-gray-300 underline"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -244,7 +344,7 @@ export default function NewBookingPage() {
                   </button>
                   {ticket.quantity > 0 && (
                     <span className="ml-2 text-purple-400 font-medium min-w-[80px] text-right">
-                      ₹{(ticket.price * ticket.quantity).toLocaleString()}
+                      ₹{(ticket.customPrice * ticket.quantity).toLocaleString()}
                     </span>
                   )}
                 </div>
