@@ -39,7 +39,8 @@ export async function DELETE(
     }
 
     // If it's a walk-in booking, check if there are any remaining tickets
-    const booking = ticket.bookings as { source: string } | null;
+    const bookingsData = ticket.bookings as { source: string }[] | null;
+    const booking = bookingsData?.[0] ?? null;
     if (booking?.source === 'walk-in') {
       const { count } = await supabase
         .from('tickets')
