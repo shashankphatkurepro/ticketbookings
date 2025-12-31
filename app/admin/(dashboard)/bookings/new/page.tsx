@@ -48,6 +48,13 @@ export default function NewBookingPage() {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'confirmed'>('confirmed');
   const [notes, setNotes] = useState('');
 
+  // Phone validation
+  const isValidPhone = (phone: string) => /^\d{10}$/.test(phone);
+  const handlePhoneChange = (value: string) => {
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    setCustomerPhone(digitsOnly);
+  };
+
   // Calculate totals
   const calculations = useMemo(() => {
     const subtotal = tickets.reduce((sum, t) => sum + t.customPrice * t.quantity, 0);
@@ -121,8 +128,8 @@ export default function NewBookingPage() {
       setError('Customer name is required');
       return;
     }
-    if (!customerPhone.trim()) {
-      setError('Customer phone is required');
+    if (!customerPhone.trim() || !isValidPhone(customerPhone)) {
+      setError('Please enter a valid 10-digit phone number');
       return;
     }
 
@@ -221,13 +228,27 @@ export default function NewBookingPage() {
               <label className="block text-sm font-medium text-gray-400 mb-1">
                 Phone <span className="text-red-400">*</span>
               </label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="+91 XXXXXXXXXX"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  maxLength={10}
+                  className={`w-full px-4 py-2.5 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                    customerPhone && !isValidPhone(customerPhone)
+                      ? 'border-yellow-500'
+                      : customerPhone && isValidPhone(customerPhone)
+                      ? 'border-green-500'
+                      : 'border-gray-700'
+                  }`}
+                  placeholder="10 digit number"
+                />
+                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                  customerPhone.length === 10 ? 'text-green-400' : 'text-gray-500'
+                }`}>
+                  {customerPhone.length}/10
+                </span>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">

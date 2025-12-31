@@ -56,6 +56,13 @@ export default function CustomersPage() {
   // Delete confirmation
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Phone validation
+  const isValidPhone = (phone: string) => /^\d{10}$/.test(phone);
+  const handlePhoneChange = (value: string) => {
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    setFormData({ ...formData, phone: digitsOnly });
+  };
+
   // Load from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);

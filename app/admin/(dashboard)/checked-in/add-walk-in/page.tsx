@@ -36,11 +36,21 @@ export default function AddWalkInPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+
+    // Only allow digits for phone field
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'quantity' ? parseInt(value) : value,
     }));
   };
+
+  const isValidPhone = (phone: string) => /^\d{10}$/.test(phone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +65,8 @@ export default function AddWalkInPage() {
         setLoading(false);
         return;
       }
-      if (!formData.phone.trim()) {
-        setError('Phone number is required');
+      if (!formData.phone.trim() || !isValidPhone(formData.phone)) {
+        setError('Please enter a valid 10-digit phone number');
         setLoading(false);
         return;
       }
@@ -152,15 +162,29 @@ export default function AddWalkInPage() {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Phone Number *
             </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Enter phone number"
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            />
+            <div className="relative">
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="10 digit phone number"
+                maxLength={10}
+                className={`w-full px-4 py-2.5 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                  formData.phone && !isValidPhone(formData.phone)
+                    ? 'border-yellow-500'
+                    : formData.phone && isValidPhone(formData.phone)
+                    ? 'border-green-500'
+                    : 'border-gray-700'
+                }`}
+                required
+              />
+              <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                formData.phone.length === 10 ? 'text-green-400' : 'text-gray-500'
+              }`}>
+                {formData.phone.length}/10
+              </span>
+            </div>
           </div>
 
           {/* Email Field */}
