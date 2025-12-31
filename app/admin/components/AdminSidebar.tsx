@@ -10,11 +10,13 @@ import {
   PartyPopper,
   Tag,
   UserCheck,
+  Users,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
+  { href: '/admin/customers', label: 'Customers', icon: Users },
   { href: '/admin/tickets', label: 'Tickets', icon: Ticket },
   { href: '/admin/checked-in', label: 'Checked-in Users', icon: UserCheck },
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },
